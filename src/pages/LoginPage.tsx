@@ -2,6 +2,7 @@ import { LockKeyhole, Mail, Eye, EyeOff, LoaderCircle } from 'lucide-react'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../lib/api'
+import { setAuthTokens } from '../lib/auth'
 import { useToast } from '../components/ui/Toast'
 
 type LoginResponse = { success: boolean; message: string; data: { access: string; refresh: string; user: { id: string; full_name: string; email: string; phone_number: string; profile_image: string | null; role: string; is_verified: boolean; created_at: string } } }
@@ -20,8 +21,7 @@ export function LoginPage() {
     try {
       const response = await api.post<LoginResponse>('/api/v1/auth/login/', { email: form.email, password: form.password })
       const { access, refresh, user } = response.data.data
-      localStorage.setItem('access_token', access)
-      localStorage.setItem('refresh_token', refresh)
+      setAuthTokens(access, refresh, rememberMe)
       localStorage.setItem('current_user', JSON.stringify(user))
       if (rememberMe) {
         localStorage.setItem('remember_me', 'true')

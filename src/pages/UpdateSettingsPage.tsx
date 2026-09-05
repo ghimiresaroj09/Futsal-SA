@@ -19,9 +19,8 @@ export function UpdateSettingsPage() {
 
   useEffect(() => {
     let active = true
-    const access = localStorage.getItem('access_token')
     const apiBase = import.meta.env.DEV ? '/backend' : (import.meta.env.VITE_API_BASE_URL || '')
-    authFetch(`${apiBase}/api/v1/admin/futsal/`, { headers: { Authorization: `Bearer ${access || ''}` } })
+    authFetch(`${apiBase}/api/v1/admin/futsal/`)
       .then(async (response) => { const body = await response.json().catch(() => ({})); if (!response.ok || !body.success) throw new Error(body?.message || 'Unable to load futsal settings.'); return body.data as FacilitySettings })
       .then((settings) => { if (active) setForm(toForm(settings)) })
       .catch((error: Error) => { if (active) showToast(error.message, 'error') })
@@ -33,9 +32,8 @@ export function UpdateSettingsPage() {
     event.preventDefault()
     setSaving(true)
     try {
-      const access = localStorage.getItem('access_token')
       const apiBase = import.meta.env.DEV ? '/backend' : (import.meta.env.VITE_API_BASE_URL || '')
-      const response = await authFetch(`${apiBase}/api/v1/admin/futsal/`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${access || ''}` }, body: JSON.stringify({ ...form, slot_duration: Number(form.slot_duration), opening_time: toApiTime(form.opening_time), closing_time: toApiTime(form.closing_time) }) })
+      const response = await authFetch(`${apiBase}/api/v1/admin/futsal/`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...form, slot_duration: Number(form.slot_duration), opening_time: toApiTime(form.opening_time), closing_time: toApiTime(form.closing_time) }) })
       const body = await response.json().catch(() => ({}))
       if (!response.ok || !body.success) throw new Error(body?.message || body?.detail || 'Unable to update futsal settings.')
       showToast(body.message || 'Futsal settings updated successfully.', 'success')

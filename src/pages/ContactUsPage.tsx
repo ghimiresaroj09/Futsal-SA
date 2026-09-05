@@ -40,7 +40,6 @@ export function ContactUsPage() {
   const [modalMode, setModalMode] = useState<'view' | 'update' | null>(null)
   useEffect(() => {
     let active = true
-    const access = localStorage.getItem('access_token')
     const apiBase = import.meta.env.DEV ? '/backend' : (import.meta.env.VITE_API_BASE_URL || '')
     authFetchAll<ContactMessage>(`${apiBase}/api/v1/admin/contact/`)
       .then((contacts) => { if (active) setContacts(contacts) })
@@ -61,9 +60,8 @@ export function ContactUsPage() {
 
     setLoadingDetail(true)
     try {
-      const access = localStorage.getItem('access_token')
       const apiBase = import.meta.env.DEV ? '/backend' : (import.meta.env.VITE_API_BASE_URL || '')
-      const response = await authFetch(`${apiBase}/api/v1/admin/contact/${item.id}/`, { headers: { Authorization: `Bearer ${access || ''}` } })
+      const response = await authFetch(`${apiBase}/api/v1/admin/contact/${item.id}/`)
       const body = await response.json().catch(() => ({}))
       if (!response.ok || !body.success) throw new Error(body?.message || 'Unable to load contact message details.')
       const contact = body.data as ContactMessage

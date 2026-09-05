@@ -31,8 +31,7 @@ export function UpdateProfilePage() {
   const update = (key: 'fullName' | 'phone', value: string) => setForm((current) => ({ ...current, [key]: value }))
 
   useEffect(() => {
-    const access = localStorage.getItem('access_token')
-    authFetch(`${apiBase}/api/v1/admin/profile/`, { headers: { Authorization: `Bearer ${access || ''}` } })
+    authFetch(`${apiBase}/api/v1/admin/profile/`)
       .then(async (response) => {
         const body = await response.json().catch(() => ({}))
         if (!response.ok) throw new Error(body?.message || body?.detail || 'Unable to load your profile.')
@@ -59,14 +58,12 @@ export function UpdateProfilePage() {
     event.preventDefault()
     setSaving(true)
     try {
-      const access = localStorage.getItem('access_token')
       const payload = new FormData()
       payload.append('full_name', form.fullName.trim())
       payload.append('phone_number', form.phone.trim())
       if (imageFile) payload.append('profile_image', imageFile)
       const response = await authFetch(`${apiBase}/api/v1/admin/profile/`, {
         method: 'PATCH',
-        headers: { Authorization: `Bearer ${access || ''}` },
         body: payload,
       })
       const body = await response.json().catch(() => ({}))

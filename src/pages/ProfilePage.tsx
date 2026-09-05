@@ -28,12 +28,8 @@ export function ProfilePage() {
 
   useEffect(() => {
     let active = true
-    const access = localStorage.getItem('access_token')
     const apiBase = import.meta.env.DEV ? '/backend' : (import.meta.env.VITE_API_BASE_URL || '')
-    authFetch(`${apiBase}/api/v1/admin/profile/`, {
-      method: 'GET',
-      headers: { Authorization: `Bearer ${access || ''}` },
-    })
+    authFetch(`${apiBase}/api/v1/admin/profile/`)
       .then(async (response) => {
         const body = await response.json().catch(() => ({}))
         if (!response.ok) throw new Error(body?.message || body?.detail || 'Unable to load your profile.')
@@ -56,13 +52,11 @@ export function ProfilePage() {
 
     setSavingImage(true)
     try {
-      const access = localStorage.getItem('access_token')
       const apiBase = import.meta.env.DEV ? '/backend' : (import.meta.env.VITE_API_BASE_URL || '')
       const payload = new FormData()
       payload.append('profile_image', file)
       const response = await authFetch(`${apiBase}/api/v1/admin/profile/`, {
         method: 'PATCH',
-        headers: { Authorization: `Bearer ${access || ''}` },
         body: payload,
       })
       const body = await response.json().catch(() => ({}))

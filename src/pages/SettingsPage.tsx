@@ -18,9 +18,8 @@ export function SettingsPage() {
 
   useEffect(() => {
     let active = true
-    const access = localStorage.getItem('access_token')
     const apiBase = import.meta.env.DEV ? '/backend' : (import.meta.env.VITE_API_BASE_URL || '')
-    authFetch(`${apiBase}/api/v1/admin/futsal/`, { method: 'GET', headers: { Authorization: `Bearer ${access || ''}` } })
+    authFetch(`${apiBase}/api/v1/admin/futsal/`)
       .then(async (response) => {
         const body = await response.json().catch(() => ({}))
         if (!response.ok || !body.success) throw new Error(body?.message || body?.detail || 'Unable to load futsal settings.')

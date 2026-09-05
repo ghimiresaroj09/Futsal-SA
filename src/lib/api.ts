@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { clearAuthTokens, getAccessToken, getRefreshToken, setAuthTokens } from './auth'
 
 const apiBase = import.meta.env.DEV ? '/backend' : (import.meta.env.VITE_API_BASE_URL || '')
 let refreshRequest: Promise<string> | null = null
@@ -28,7 +29,7 @@ async function refreshAccessToken() {
   if (refreshRequest) return refreshRequest
 
   refreshRequest = (async () => {
-    const refresh = localStorage.getItem('refresh_token')
+    const refresh = getRefreshToken()
     if (!refresh) throw new Error('Session expired.')
     const response = await fetch(`${apiBase}/api/v1/auth/refresh/`, {
       method: 'POST',
@@ -37,8 +38,8 @@ async function refreshAccessToken() {
     })
     const body = await response.json().catch(() => ({}))
     if (!response.ok || !body.success || !body.data?.access) throw new Error(body?.message || 'Session expired.')
-    localStorage.setItem('access_token', body.data.access)
-    if (body.data.refresh) localStorage.setItem('refresh_token', body.data.refresh)
+    // Some backends rotate only the access token; retain the existing refresh token then.
+    setAuthTokens(body.data.access, body.data.refresh || refresh, localStorage.getItem('remember_me') === 'true')
     return body.data.access as string
   })()
 
@@ -54,14 +55,13 @@ export async function authFetch(input: RequestInfo | URL, init: RequestInit = {}
   }
 
   try {
-    const response = await send(localStorage.getItem('access_token'))
+    const response = await send(getAccessToken())
     if (response.status !== 401) return response
 
     try {
       return await send(await refreshAccessToken())
     } catch (error) {
-      localStorage.removeItem('access_token')
-      localStorage.removeItem('refresh_token')
+      clearAuthTokens()
       window.dispatchEvent(new CustomEvent('auth:unauthorized'))
       throw error
     }
@@ -100,16 +100,29 @@ export const api = axios.create({
 
 api.interceptors.request.use((config) => {
   if (config.method && config.method.toUpperCase() !== 'GET') axiosButtonReleases.set(config, showButtonSpinner())
-  const token = localStorage.getItem('access_token')
+  const token = getAccessToken()
   if (token) config.headers.Authorization = `Bearer ${token}`
   return config
 })
 
 api.interceptors.response.use(
   (response) => { axiosButtonReleases.get(response.config)?.(); return response },
-  (error) => {
+  async (error) => {
     if (error.config) axiosButtonReleases.get(error.config)?.()
-    if (error.response?.status === 401) {
+    const config = error.config as (typeof error.config & { _authRetried?: boolean }) | undefined
+    const isAuthEndpoint = config?.url?.includes('/api/v1/auth/')
+    if (error.response?.status === 401 && config && !config._authRetried && !isAuthEndpoint) {
+      config._authRetried = true
+      try {
+        const access = await refreshAccessToken()
+        config.headers = config.headers || {}
+        config.headers.Authorization = `Bearer ${access}`
+        return api.request(config)
+      } catch {
+        clearAuthTokens()
+      }
+    }
+    if (error.response?.status === 401 && !isAuthEndpoint) {
       window.dispatchEvent(new CustomEvent('auth:unauthorized'))
     }
     return Promise.reject(error)

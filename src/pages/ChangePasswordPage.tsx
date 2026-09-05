@@ -3,6 +3,7 @@ import { useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useToast } from '../components/ui/Toast'
 import { authFetch } from '../lib/api'
+import { clearAuthTokens } from '../lib/auth'
 
 export function ChangePasswordPage() {
   const navigate = useNavigate()
@@ -22,8 +23,7 @@ export function ChangePasswordPage() {
       const response = await authFetch(`${apiBase}/api/v1/auth/change-password/`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ old_password: form.old, new_password: form.next, confirm_password: form.confirm }) })
       const body = await response.json().catch(() => ({}))
       if (!response.ok || !body.success) throw new Error(body?.message || body?.detail || 'Unable to change password.')
-      localStorage.removeItem('access_token')
-      localStorage.removeItem('refresh_token')
+      clearAuthTokens()
       localStorage.removeItem('current_user')
       showToast(body.message || 'Password changed successfully. Please login again.', 'success')
       navigate('/login', { replace: true })

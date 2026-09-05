@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom'
 import { NotificationDrawer } from './NotificationDrawer'
 import { useToast } from '../ui/Toast'
 import { authFetch } from '../../lib/api'
+import { clearAuthTokens, getAccessToken, getRefreshToken } from '../../lib/auth'
 import '../../styles/avatar.css'
 
 const navigation = [
@@ -24,6 +25,8 @@ export function AppShell() {
   const [profileOpen, setProfileOpen] = useState(false)
   const [notificationsOpen, setNotificationsOpen] = useState(false)
   const [slotMenuOpen, setSlotMenuOpen] = useState(true)
+  const [logoutConfirmationOpen, setLogoutConfirmationOpen] = useState(false)
+  const [logoutPending, setLogoutPending] = useState(false)
   const logoutInProgress = useRef(false)
   const navigate = useNavigate()
   const { showToast } = useToast()
@@ -72,8 +75,9 @@ export function AppShell() {
   const handleLogout = async () => {
     if (logoutInProgress.current) return
     logoutInProgress.current = true
-    const refresh = localStorage.getItem('refresh_token')
-    const access = localStorage.getItem('access_token')
+    setLogoutPending(true)
+    const refresh = getRefreshToken()
+    const access = getAccessToken()
     setProfileOpen(false)
     try {
       if (!access || !refresh) throw new Error('Your session has expired. Please sign in again.')
@@ -103,13 +107,19 @@ export function AppShell() {
       const message = responseData?.message || (Array.isArray(detail) ? detail[0] : detail) || requestError.message || 'Logout failed. You have been signed out locally.'
       showToast(message, 'error')
     } finally {
-      localStorage.removeItem('access_token')
-      localStorage.removeItem('refresh_token')
+      clearAuthTokens()
       localStorage.removeItem('current_user')
       localStorage.removeItem('remember_me')
       window.dispatchEvent(new CustomEvent('auth:logout'))
+      setLogoutPending(false)
       navigate('/login')
     }
+  }
+
+  const requestLogout = () => {
+    setProfileOpen(false)
+    setMobileOpen(false)
+    setLogoutConfirmationOpen(true)
   }
 
   const handleSidebarToggle = () => {
@@ -127,14 +137,15 @@ export function AppShell() {
         <p className="nav-label">Workspace</p>
         <nav className="main-nav">
           {navigation.map(({ label, to, icon: Icon }) => label === 'Slot Management' ? <div key={to} className="slot-nav-group"><button className="nav-item slot-nav-toggle" onClick={() => setSlotMenuOpen((open) => !open)} aria-expanded={slotMenuOpen} title={sidebarCollapsed ? label : undefined}><Icon size={18} /><span>{label}</span><ChevronDown size={15} className={slotMenuOpen ? 'slot-chevron-open' : ''} /></button>{slotMenuOpen && <div className="slot-subnav"><NavLink to="/manage-slots" onClick={() => setMobileOpen(false)} className={({ isActive }) => isActive ? 'active' : ''}>Manage Slots</NavLink><NavLink to="/slot-availability" onClick={() => setMobileOpen(false)} className={({ isActive }) => isActive ? 'active' : ''}>Availability</NavLink><NavLink to="/bulk-slots" onClick={() => setMobileOpen(false)} className={({ isActive }) => isActive ? 'active' : ''}>Bulk Slots</NavLink><NavLink to="/closure" onClick={() => setMobileOpen(false)} className={({ isActive }) => isActive ? 'active' : ''}>Closure</NavLink></div>}</div> : <NavLink key={to} to={to} end={to === '/'} onClick={() => setMobileOpen(false)} className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`} title={sidebarCollapsed ? label : undefined}><Icon size={18} /><span>{label}</span></NavLink>)}
-          <button className="nav-item nav-logout" onClick={handleLogout}><LogOut size={18} /><span>Logout</span></button>
+          <button className="nav-item nav-logout" onClick={requestLogout}><LogOut size={18} /><span>Logout</span></button>
         </nav>
       </aside>
       {mobileOpen && <button className="sidebar-backdrop" onClick={() => setMobileOpen(false)} aria-label="Close menu" />}
       <main className="main-content">
-        <header className="topbar"><button className="icon-button mobile-menu" onClick={handleSidebarToggle} aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'} aria-expanded={!sidebarCollapsed}><Menu size={21} /></button><div className="breadcrumbs"><span>Workspace</span><span>/</span><strong>Dashboard</strong></div><div className="topbar-actions"><button className="icon-button notification" onClick={() => setNotificationsOpen(true)} aria-label="Notifications"><Bell size={19} /><span className="notification-count">3</span></button>{notificationsOpen && <NotificationDrawer onClose={() => setNotificationsOpen(false)} onViewAll={() => { setNotificationsOpen(false); navigate('/notifications') }} onViewBooking={(redirectUrl) => { setNotificationsOpen(false); navigate(redirectUrl.replace(/^\/admin(?=\/|$)/, '')) }} />}<div className="profile-wrapper"><button className="user-menu" onClick={() => setProfileOpen((open) => !open)} aria-expanded={profileOpen} aria-haspopup="menu"><div className="avatar">{initials}</div><div className="user-copy"><strong>{displayName}</strong><span>{currentUser?.role || 'Administrator'}</span></div><ChevronDown size={16} className={profileOpen ? 'chevron-open' : ''} /></button>{profileOpen && <div className="profile-dropdown" role="menu"><button onClick={() => { setProfileOpen(false); navigate('/profile') }} role="menuitem"><UserCircle size={16} />Profile</button><button onClick={handleLogout} role="menuitem" className="logout-item"><LogOut size={16} />Logout</button></div>}</div></div></header>
+        <header className="topbar"><button className="icon-button mobile-menu" onClick={handleSidebarToggle} aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'} aria-expanded={!sidebarCollapsed}><Menu size={21} /></button><div className="breadcrumbs"><span>Workspace</span><span>/</span><strong>Dashboard</strong></div><div className="topbar-actions"><button className="icon-button notification" onClick={() => setNotificationsOpen(true)} aria-label="Notifications"><Bell size={19} /><span className="notification-count">3</span></button>{notificationsOpen && <NotificationDrawer onClose={() => setNotificationsOpen(false)} onViewAll={() => { setNotificationsOpen(false); navigate('/notifications') }} onViewBooking={(redirectUrl) => { setNotificationsOpen(false); navigate(redirectUrl.replace(/^\/admin(?=\/|$)/, '')) }} />}<div className="profile-wrapper"><button className="user-menu" onClick={() => setProfileOpen((open) => !open)} aria-expanded={profileOpen} aria-haspopup="menu"><div className="avatar">{initials}</div><div className="user-copy"><strong>{displayName}</strong><span>{currentUser?.role || 'Administrator'}</span></div><ChevronDown size={16} className={profileOpen ? 'chevron-open' : ''} /></button>{profileOpen && <div className="profile-dropdown" role="menu"><button onClick={() => { setProfileOpen(false); navigate('/profile') }} role="menuitem"><UserCircle size={16} />Profile</button><button onClick={requestLogout} role="menuitem" className="logout-item"><LogOut size={16} />Logout</button></div>}</div></div></header>
         <div className="page-content"><Outlet /></div>
       </main>
+      {logoutConfirmationOpen && <div className="modal-backdrop" onClick={() => !logoutPending && setLogoutConfirmationOpen(false)}><div className="confirmation-modal" role="dialog" aria-modal="true" aria-labelledby="logout-confirmation-title" onClick={(event) => event.stopPropagation()}><div className="confirmation-icon confirm-danger"><LogOut size={22} /></div><h2 id="logout-confirmation-title">Log out?</h2><p>You’ll need to sign in again to access your workspace.</p><div className="confirmation-actions"><button className="secondary-button" onClick={() => setLogoutConfirmationOpen(false)} disabled={logoutPending}>Cancel</button><button className="danger-button" onClick={() => void handleLogout()} disabled={logoutPending}>{logoutPending ? 'Logging out...' : 'Log out'}</button></div></div></div>}
     </div>
   )
 }
