@@ -17,7 +17,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useLocation, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useToast } from "../components/ui/Toast";
 import { authFetch, authFetchAll } from "../lib/api";
 
@@ -199,6 +199,7 @@ const bookings: Booking[] = [
 
 export function BookingsPage() {
   const location = useLocation();
+  const navigate = useNavigate();
   const { id: routeBookingId } = useParams();
   const { showToast } = useToast();
   const [query, setQuery] = useState("");
@@ -261,6 +262,12 @@ export function BookingsPage() {
   const updatingBookingRef = useRef(false);
   const sendingReminderRef = useRef(false);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const closeBookingDetails = () => {
+    setSelectedBooking(null);
+    if (routeBookingId || new URLSearchParams(location.search).has("booking")) {
+      navigate("/bookings", { replace: true });
+    }
+  };
   useEffect(() => {
     let active = true;
     const apiBase = import.meta.env.DEV
@@ -971,7 +978,7 @@ export function BookingsPage() {
       {selectedBooking && (
         <div
           className="modal-backdrop"
-          onClick={() => setSelectedBooking(null)}
+          onClick={closeBookingDetails}
         >
           <div
             className="contact-modal booking-modal"
@@ -984,7 +991,7 @@ export function BookingsPage() {
               </div>
               <button
                 className="modal-close"
-                onClick={() => setSelectedBooking(null)}
+                onClick={closeBookingDetails}
                 aria-label="Close booking details"
               >
                 <X size={18} />
