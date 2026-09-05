@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useToast } from '../components/ui/Toast'
 import { authFetch } from '../lib/api'
 import { PageSkeleton } from '../components/ui/PageSkeleton'
+import { jsPDF } from 'jspdf'
 
 type Summary = { total_revenue: number; total_bookings: number; average_booking_value: number; active_customers: number; revenue_change_percent: number; bookings_change_percent: number; average_booking_value_change_percent: number; active_customers_change_percent: number }
 type RevenuePeriod = { period: string; label: string; revenue: number; booking_count: number }
@@ -21,6 +22,7 @@ export function AnalyticsPage() {
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null)
   const [period, setPeriod] = useState<'7d' | '30d' | '6m' | '12m'>('6m')
   const [loading, setLoading] = useState(true)
+  const [exporting, setExporting] = useState(false)
 
   useEffect(() => {
     let active = true
@@ -61,6 +63,101 @@ export function AnalyticsPage() {
     })
   }, [analytics, chart.max])
 
+  const exportReport = () => {
+    if (!analytics || exporting) return
+    setExporting(true)
+    try {
+      const document = new jsPDF({ unit: 'mm', format: 'a4' })
+      const pageWidth = document.internal.pageSize.getWidth()
+      const pageHeight = document.internal.pageSize.getHeight()
+      const margin = 16
+      let cursor = 20
+      const ensureSpace = (height: number) => {
+        if (cursor + height <= pageHeight - 16) return
+        document.addPage()
+        cursor = 18
+      }
+      const title = (text: string) => {
+        ensureSpace(11)
+        document.setFont('helvetica', 'bold')
+        document.setFontSize(13)
+        document.setTextColor(48, 49, 71)
+        document.text(text, margin, cursor)
+        cursor += 8
+      }
+      const row = (label: string, value: string) => {
+        const lines = document.splitTextToSize(value, pageWidth - margin * 2 - 54)
+        ensureSpace(Math.max(7, lines.length * 5 + 3))
+        document.setFont('helvetica', 'bold')
+        document.setFontSize(9)
+        document.setTextColor(85, 87, 108)
+        document.text(label, margin, cursor)
+        document.setFont('helvetica', 'normal')
+        document.setTextColor(112, 114, 135)
+        document.text(lines, margin + 54, cursor)
+        cursor += Math.max(7, lines.length * 5 + 3)
+      }
+      const divider = () => {
+        ensureSpace(3)
+        document.setDrawColor(232, 232, 240)
+        document.line(margin, cursor, pageWidth - margin, cursor)
+        cursor += 5
+      }
+
+      document.setFillColor(117, 105, 232)
+      document.rect(0, 0, pageWidth, 10, 'F')
+      document.setFont('helvetica', 'bold')
+      document.setFontSize(21)
+      document.setTextColor(48, 49, 71)
+      document.text('Nexus FMS Analytics Report', margin, cursor)
+      cursor += 8
+      document.setFont('helvetica', 'normal')
+      document.setFontSize(10)
+      document.setTextColor(112, 114, 135)
+      document.text(`Reporting period: ${analytics.period.start_date} to ${analytics.period.end_date}`, margin, cursor)
+      cursor += 5
+      document.text(`Generated: ${new Date(analytics.generated_at).toLocaleString()} (${analytics.period.timezone})`, margin, cursor)
+      cursor += 10
+
+      title('Summary')
+      row('Total revenue', money(analytics.summary.total_revenue))
+      row('Total bookings', analytics.summary.total_bookings.toLocaleString())
+      row('Average booking value', money(analytics.summary.average_booking_value))
+      row('Active customers', analytics.summary.active_customers.toLocaleString())
+      divider()
+
+      title('Revenue overview')
+      analytics.revenue_overview.forEach((item) => row(item.label, `${money(item.revenue)} · ${item.booking_count} booking${item.booking_count === 1 ? '' : 's'}`))
+      divider()
+
+      title('Booking status')
+      row('Total bookings', analytics.booking_status.total.toLocaleString())
+      analytics.booking_status.breakdown.forEach((item) => row(item.label, `${item.count} bookings · ${item.percentage}%`))
+      divider()
+
+      title('Bookings by day')
+      analytics.bookings_by_day.forEach((item) => row(item.label, `${item.booking_count} booking${item.booking_count === 1 ? '' : 's'}`))
+      divider()
+
+      title('Revenue by source')
+      analytics.revenue_by_source.forEach((item) => row(item.label, `${money(item.revenue)} · ${item.booking_count} booking${item.booking_count === 1 ? '' : 's'} · ${item.percentage}%`))
+
+      const pages = document.getNumberOfPages()
+      for (let page = 1; page <= pages; page += 1) {
+        document.setPage(page)
+        document.setFontSize(8)
+        document.setTextColor(150, 152, 168)
+        document.text(`Nexus FMS · Page ${page} of ${pages}`, pageWidth - margin, pageHeight - 8, { align: 'right' })
+      }
+      document.save(`nexus-fms-analytics-${analytics.period.start_date}-to-${analytics.period.end_date}.pdf`)
+      showToast('Analytics report downloaded.', 'success')
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : 'Unable to export the analytics report.', 'error')
+    } finally {
+      setExporting(false)
+    }
+  }
+
   if (loading) return <PageSkeleton eyebrow="Performance overview" title="Analytics" description="Track revenue, bookings, and customer activity across your facility." />
   if (!analytics) return <div className="empty-page"><h1>Analytics unavailable</h1><p>We couldn’t load the latest analytics. Please refresh and try again.</p></div>
 
@@ -75,5 +172,5 @@ export function AnalyticsPage() {
   let progress = 0
   const donutStops = bookingStatus.breakdown.map((item) => { const start = progress; progress += item.percentage; return `${({ CONFIRMED: '#7569e8', COMPLETED: '#2da978', CANCELLED: '#e07684', PENDING: '#e8b84f', RESCHEDULED: '#4a9ee9' }[item.status] || '#dedeea')} ${start}% ${progress}%` }).join(', ')
 
-  return <div className="analytics-page"><div className="page-heading"><div><p className="eyebrow">Performance overview</p><h1>Analytics</h1><p className="muted">Track revenue, bookings, and customer activity across your facility.</p></div><div className="analytics-actions"><select value={period} onChange={(event) => setPeriod(event.target.value as typeof period)}><option value="7d">Last 7 days</option><option value="30d">Last 30 days</option><option value="6m">Last 6 months</option><option value="12m">Last 12 months</option></select><button className="primary-button" disabled><Download size={16} />Export report</button></div></div><section className="analytics-metrics">{metrics.map(({ label, value, change, icon: Icon, tone }) => { const positive = change >= 0; return <article className="analytics-metric" key={label}><div className={`analytics-metric-icon ${tone}`}><Icon size={18} /></div><span>{label}</span><strong>{value}</strong><small className={positive ? '' : 'negative'}>{positive ? <ArrowUpRight size={13} /> : <ArrowDownRight size={13} />}{Math.abs(change)}% <em>vs previous period</em></small></article> })}</section><section className="analytics-main-grid"><article className="analytics-panel revenue-panel"><div className="analytics-panel-heading"><div><h2>Revenue overview</h2><p>Revenue for the selected period</p></div><span className="chart-legend"><i />Revenue</span></div><div className="revenue-chart"><div className="chart-axis">{[1, .75, .5, .25, 0].map((factor) => <span key={factor}>{money(chart.max * factor)}</span>)}</div><div className="revenue-chart-area"><div className="analytics-grid-lines" />{chart.points ? <svg viewBox="0 0 800 260" preserveAspectRatio="none"><defs><linearGradient id="analyticsFill" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stopColor="#7569e8" stopOpacity=".26" /><stop offset="1" stopColor="#7569e8" stopOpacity="0" /></linearGradient></defs><polygon points={chart.fill} fill="url(#analyticsFill)" /><polyline points={chart.points} fill="none" stroke="#7569e8" strokeWidth="3" /></svg> : <div className="analytics-chart-empty">No revenue data available.</div>}<div className="chart-months">{chart.labels.map((label) => <span key={label}>{label}</span>)}</div></div></div></article><article className="analytics-panel status-panel"><div className="analytics-panel-heading"><div><h2>Booking status</h2><p>All bookings by status</p></div></div><div className="donut-wrap"><div className="donut" title={bookingStatus.breakdown.map((item) => `${item.label}: ${item.count} (${item.percentage}%)`).join('\n')} style={{ background: `conic-gradient(${donutStops || '#dedeea 0 100%'})` }}><div><strong>{bookingStatus.total.toLocaleString()}</strong><span>Bookings</span></div></div><div className="status-list">{bookingStatus.breakdown.map((item) => <div className="status-row" key={item.status}><span><i className={statusTone(item.status)} />{item.label}</span><strong>{item.percentage}%</strong><small>{item.count}</small></div>)}</div></div></article></section><section className="analytics-bottom-grid"><article className="analytics-panel bar-panel"><div className="analytics-panel-heading"><div><h2>Bookings by day</h2><p>Bookings in the selected period</p></div><span className="chart-legend blue-legend"><i />Bookings</span></div><div className="bar-chart">{analytics.bookings_by_day.map((item) => <div className="bar-col" key={item.day}><div className="bar" style={{ height: `${(item.booking_count / totalDayBookings) * 100}%` }} title={`${item.booking_count} bookings`} /><span>{item.label}</span></div>)}</div></article><article className="analytics-panel source-panel"><div className="analytics-panel-heading"><div><h2>Revenue by source</h2><p>Where your bookings come from</p></div></div>{analytics.revenue_by_source.map((item) => <div className="source-row" key={item.source}><div className="source-label"><span className={`source-circle ${item.source.toLowerCase()}`}>{item.source.charAt(0)}</span><div><strong>{item.label}</strong><small>{item.booking_count} bookings · {item.percentage}%</small></div></div><strong>{money(item.revenue)}</strong></div>)}</article></section></div>
+  return <div className="analytics-page"><div className="page-heading"><div><p className="eyebrow">Performance overview</p><h1>Analytics</h1><p className="muted">Track revenue, bookings, and customer activity across your facility.</p></div><div className="analytics-actions"><select value={period} onChange={(event) => setPeriod(event.target.value as typeof period)}><option value="7d">Last 7 days</option><option value="30d">Last 30 days</option><option value="6m">Last 6 months</option><option value="12m">Last 12 months</option></select><button className="primary-button" onClick={exportReport} disabled={exporting}><Download size={16} />{exporting ? 'Exporting...' : 'Export report'}</button></div></div><section className="analytics-metrics">{metrics.map(({ label, value, change, icon: Icon, tone }) => { const positive = change >= 0; return <article className="analytics-metric" key={label}><div className={`analytics-metric-icon ${tone}`}><Icon size={18} /></div><span>{label}</span><strong>{value}</strong><small className={positive ? '' : 'negative'}>{positive ? <ArrowUpRight size={13} /> : <ArrowDownRight size={13} />}{Math.abs(change)}% <em>vs previous period</em></small></article> })}</section><section className="analytics-main-grid"><article className="analytics-panel revenue-panel"><div className="analytics-panel-heading"><div><h2>Revenue overview</h2><p>Revenue for the selected period</p></div><span className="chart-legend"><i />Revenue</span></div><div className="revenue-chart"><div className="chart-axis">{[1, .75, .5, .25, 0].map((factor) => <span key={factor}>{money(chart.max * factor)}</span>)}</div><div className="revenue-chart-area"><div className="analytics-grid-lines" />{chart.points ? <svg viewBox="0 0 800 260" preserveAspectRatio="none"><defs><linearGradient id="analyticsFill" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stopColor="#7569e8" stopOpacity=".26" /><stop offset="1" stopColor="#7569e8" stopOpacity="0" /></linearGradient></defs><polygon points={chart.fill} fill="url(#analyticsFill)" /><polyline points={chart.points} fill="none" stroke="#7569e8" strokeWidth="3" /></svg> : <div className="analytics-chart-empty">No revenue data available.</div>}<div className="chart-months">{chart.labels.map((label) => <span key={label}>{label}</span>)}</div></div></div></article><article className="analytics-panel status-panel"><div className="analytics-panel-heading"><div><h2>Booking status</h2><p>All bookings by status</p></div></div><div className="donut-wrap"><div className="donut" title={bookingStatus.breakdown.map((item) => `${item.label}: ${item.count} (${item.percentage}%)`).join('\n')} style={{ background: `conic-gradient(${donutStops || '#dedeea 0 100%'})` }}><div><strong>{bookingStatus.total.toLocaleString()}</strong><span>Bookings</span></div></div><div className="status-list">{bookingStatus.breakdown.map((item) => <div className="status-row" key={item.status}><span><i className={statusTone(item.status)} />{item.label}</span><strong>{item.percentage}%</strong><small>{item.count}</small></div>)}</div></div></article></section><section className="analytics-bottom-grid"><article className="analytics-panel bar-panel"><div className="analytics-panel-heading"><div><h2>Bookings by day</h2><p>Bookings in the selected period</p></div><span className="chart-legend blue-legend"><i />Bookings</span></div><div className="bar-chart">{analytics.bookings_by_day.map((item) => <div className="bar-col" key={item.day}><div className="bar" style={{ height: `${(item.booking_count / totalDayBookings) * 100}%` }} title={`${item.booking_count} bookings`} /><span>{item.label}</span></div>)}</div></article><article className="analytics-panel source-panel"><div className="analytics-panel-heading"><div><h2>Revenue by source</h2><p>Where your bookings come from</p></div></div>{analytics.revenue_by_source.map((item) => <div className="source-row" key={item.source}><div className="source-label"><span className={`source-circle ${item.source.toLowerCase()}`}>{item.source.charAt(0)}</span><div><strong>{item.label}</strong><small>{item.booking_count} bookings · {item.percentage}%</small></div></div><strong>{money(item.revenue)}</strong></div>)}</article></section></div>
 }
