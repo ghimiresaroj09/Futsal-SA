@@ -77,25 +77,6 @@ type BookingsResponse = {
   };
 };
 
-let dateWiseSlots: Slot[] = [
-  {
-    id: "58e0aab2-f0c1-42d2-af94-0f7b7c32e13b",
-    date: "2026-09-05",
-    start_time: "07:00:00",
-    end_time: "08:00:00",
-    price: "2000.00",
-    status: "AVAILABLE",
-  },
-  {
-    id: "f5078fee-ab18-4fa1-b488-95fee238ee48",
-    date: "2026-09-05",
-    start_time: "09:00:00",
-    end_time: "10:00:00",
-    price: "2092451.00",
-    status: "BOOKED",
-  },
-];
-
 type Reminder = {
   id: string;
   booking: string;
@@ -108,95 +89,6 @@ type Reminder = {
   created_at: string;
 };
 type ReminderResponse = { success: boolean; message: string; data: Reminder };
-const initialReminders: Reminder[] = [
-  {
-    id: "6277f9d2-09fd-4ec1-9fa9-b8ba94239b2f",
-    booking: "3cf897e2-67b8-4653-ac7f-e82fd10909be",
-    booking_reference: "FSL-20260905-0003",
-    reminder_type: "MANUAL",
-    scheduled_at: "2026-09-04T22:52:41.530439+05:45",
-    sent_at: "2026-09-04T22:52:47.159951+05:45",
-    status: "SENT",
-    error_message: "",
-    created_at: "2026-09-04T22:52:41.541400+05:45",
-  },
-];
-
-const bookings: Booking[] = [
-  {
-    id: "f3315747-fc04-429d-83cf-90da4f798779",
-    booking_reference: "FSL-20260905-0001",
-    slot: {
-      date: "2026-09-05",
-      start_time: "07:00:00",
-      end_time: "08:00:00",
-      price: "2000.00",
-      status: "AVAILABLE",
-    },
-    futsal_name: "Futsal",
-    full_name: "Nexus Being",
-    email: "ghimires090@gmail.com",
-    phone_number: "9843951167",
-    amount: "2000.00",
-    status: "CANCELLED",
-    booking_source: "USER",
-    payment_status: "PENDING",
-    cancelled_at: "2026-09-04T21:36:50.339624+05:45",
-    cancellation_reason: "Not enough players.",
-    notes: "We are ready for some action.",
-    created_at: "2026-09-04T21:35:09.076941+05:45",
-    updated_at: "2026-09-04T21:36:50.339624+05:45",
-  },
-  {
-    id: "c3a491fb-448b-4e9b-b584-9d19a90109bf",
-    booking_reference: "FSL-20260905-0002",
-    slot: {
-      date: "2026-09-05",
-      start_time: "07:00:00",
-      end_time: "08:00:00",
-      price: "2000.00",
-      status: "AVAILABLE",
-    },
-    futsal_name: "Futsal",
-    full_name: "Nexus Being",
-    email: "ghimires090@gmail.com",
-    phone_number: "9843951167",
-    amount: "2000.00",
-    status: "CANCELLED",
-    booking_source: "USER",
-    payment_status: "PENDING",
-    cancelled_at: "2026-09-04T21:39:34.799213+05:45",
-    cancellation_reason: "Not enough players....",
-    notes: "We are ready for some action.",
-    created_at: "2026-09-04T21:39:04.924473+05:45",
-    updated_at: "2026-09-04T21:39:34.799213+05:45",
-  },
-  {
-    id: "3cf897e2-67b8-4653-ac7f-e82fd10909be",
-    booking_reference: "FSL-20260905-0003",
-    slot: {
-      date: "2026-09-05",
-      start_time: "09:00:00",
-      end_time: "10:00:00",
-      price: "2092451.00",
-      status: "BOOKED",
-    },
-    futsal_name: "Futsal",
-    full_name: "string",
-    email: "user@example.com",
-    phone_number: "94165123",
-    amount: "2092451.00",
-    status: "CONFIRMED",
-    booking_source: "USER",
-    payment_status: "PENDING",
-    cancelled_at: null,
-    cancellation_reason: "",
-    notes: "",
-    created_at: "2026-09-04T21:52:20.928761+05:45",
-    updated_at: "2026-09-04T21:52:20.928761+05:45",
-  },
-];
-
 export function BookingsPage() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -238,9 +130,9 @@ export function BookingsPage() {
     booking: Booking;
     mode: "send" | "history";
   } | null>(null);
-  const [reminders, setReminders] = useState<Reminder[]>(initialReminders);
+  const [reminders, setReminders] = useState<Reminder[]>([]);
   const [loadingReminderHistory, setLoadingReminderHistory] = useState(false);
-  const [rescheduleDate, setRescheduleDate] = useState("2026-09-05");
+  const [rescheduleDate, setRescheduleDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [newSlotId, setNewSlotId] = useState("");
   const [addForm, setAddForm] = useState({
     slot_id: "",
@@ -252,7 +144,7 @@ export function BookingsPage() {
     status: "PENDING",
     advance_amount: "",
   });
-  const [slotDate, setSlotDate] = useState("2026-09-05");
+  const [slotDate, setSlotDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [availableSlots, setAvailableSlots] = useState<Slot[]>([]);
   const [loadingAvailableSlots, setLoadingAvailableSlots] = useState(false);
   const [addingBooking, setAddingBooking] = useState(false);
@@ -334,14 +226,10 @@ export function BookingsPage() {
       })
       .then((result) => {
         if (!active) return;
-        dateWiseSlots = result.data.results.filter(
-          (slot) => slot.status === "AVAILABLE",
-        );
-        setAvailableSlots(dateWiseSlots);
+        setAvailableSlots(result.data.results.filter((slot) => slot.status === "AVAILABLE"));
       })
       .catch((error: Error) => {
         if (active) {
-          dateWiseSlots = [];
           setAvailableSlots([]);
           showToast(error.message, "error");
         }
@@ -404,10 +292,7 @@ export function BookingsPage() {
       })
       .then((result) => {
         if (active) {
-          dateWiseSlots = result.data.results.filter(
-            (slot) => slot.status === "AVAILABLE",
-          );
-          setAvailableSlots(dateWiseSlots);
+          setAvailableSlots(result.data.results.filter((slot) => slot.status === "AVAILABLE"));
         }
       })
       .catch((error: Error) => {
@@ -1336,8 +1221,7 @@ export function BookingsPage() {
                     required
                   >
                     <option value="">Select a slot</option>
-                    {dateWiseSlots
-                      .filter((slot) => slot.date === slotDate)
+                    {availableSlots
                       .map((slot) => (
                         <option
                           key={slot.id}
@@ -1534,8 +1418,7 @@ export function BookingsPage() {
                     required
                   >
                     <option value="">Select a slot</option>
-                    {dateWiseSlots
-                      .filter((slot) => slot.date === rescheduleDate)
+                    {availableSlots
                       .map((slot) => (
                         <option
                           key={slot.id}
