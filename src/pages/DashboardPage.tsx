@@ -17,7 +17,7 @@ const formatDate = (date: string) => new Intl.DateTimeFormat(undefined, { weekda
 const formatShortDate = (date: string) => new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date(`${date}T00:00:00`))
 const statusLabel = (status: string) => status.charAt(0) + status.slice(1).toLowerCase()
 const statusTone = (status: string) => ({ COMPLETED: 'confirmed', CONFIRMED: 'confirmed', RESCHEDULED: 'pending', PENDING: 'pending', CANCELLED: 'cancelled' }[status] || 'pending')
-function getGreeting() { const hour = new Date().getHours(); return hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening' }
+function getGreeting() { const hour = new Date().getHours(); return hour < 12 ? 'Good Morning' : hour < 18 ? 'Good Afternoon' : 'Good Evening' }
 
 export function DashboardPage() {
   const navigate = useNavigate()
