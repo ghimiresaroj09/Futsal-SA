@@ -38,7 +38,8 @@ async function refreshAccessToken() {
     })
     const body = await response.json().catch(() => ({}))
     if (!response.ok || !body.success || !body.data?.access) throw new Error(body?.message || 'Session expired.')
-    // Some backends rotate only the access token; retain the existing refresh token then.
+    // Replace the access-token cookie before any waiting request is retried. Some
+    // backends rotate only the access token, so preserve the refresh token then.
     setAuthTokens(body.data.access, body.data.refresh || refresh, localStorage.getItem('remember_me') === 'true')
     return body.data.access as string
   })()
@@ -59,7 +60,12 @@ export async function authFetch(input: RequestInfo | URL, init: RequestInit = {}
     if (response.status !== 401) return response
 
     try {
-      return await send(await refreshAccessToken())
+      const refreshedAccess = await refreshAccessToken()
+      const retriedResponse = await send(refreshedAccess)
+      // A retry that is still unauthorized means the new credentials are not usable.
+      // End the session instead of returning a response that pages render as "try again".
+      if (retriedResponse.status === 401) throw new Error('Session expired.')
+      return retriedResponse
     } catch (error) {
       clearAuthTokens()
       window.dispatchEvent(new CustomEvent('auth:unauthorized'))
