@@ -38,15 +38,20 @@ export function AppShell() {
   useEffect(() => {
     let active = true
     const apiBase = import.meta.env.DEV ? '/backend' : (import.meta.env.VITE_API_BASE_URL || '')
+    const updateBadge = (count: number) => {
+      const badge = document.querySelector<HTMLElement>('.notification-count')
+      if (active && badge) badge.textContent = String(count)
+    }
+    const handleUnreadCount = (event: Event) => updateBadge((event as CustomEvent<number>).detail)
     authFetch(`${apiBase}/api/v1/admin/notifications/`)
       .then(async (response) => {
         const body = await response.json().catch(() => ({}))
         if (!response.ok || !body.success) return
-        const badge = document.querySelector<HTMLElement>('.notification-count')
-        if (active && badge) badge.textContent = String(body.data?.unread_count || 0)
+        updateBadge(body.data?.unread_count || 0)
       })
       .catch(() => {})
-    return () => { active = false }
+    window.addEventListener('notifications:unread-count', handleUnreadCount)
+    return () => { active = false; window.removeEventListener('notifications:unread-count', handleUnreadCount) }
   }, [])
 
   useEffect(() => {
