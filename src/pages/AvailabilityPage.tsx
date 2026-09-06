@@ -18,50 +18,73 @@ type Slot = {
   price: string;
   status: string;
 };
+
 type SlotsResponse = {
   success: boolean;
   message: string;
   data: { count: number; results: Slot[] };
 };
+
 type CopySlotsResponse = {
   success: boolean;
   message: string;
   data: { created: number; slots: Slot[] };
 };
 
-const months = ["2026-09", "2026-10", "2026-11"];
-const dates = months.flatMap((month) =>
-  Array.from(
-    { length: 21 },
-    (_, index) => `${month}-${String(index + 5).padStart(2, "0")}`,
-  ),
-);
+function getLocalDate() {
+  const date = new Date();
+
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
+function getLocalMonth() {
+  return getLocalDate().slice(0, 7);
+}
 
 export function AvailabilityPage() {
   const { showToast } = useToast();
-  const [selectedMonth, setSelectedMonth] = useState("2026-09");
-  const [selectedDate, setSelectedDate] = useState(dates[0]);
+
+  const today = getLocalDate();
+  const currentMonth = getLocalMonth();
+
+  const [selectedMonth, setSelectedMonth] = useState(currentMonth);
+  const [selectedDate, setSelectedDate] = useState(today);
   const [slots, setSlots] = useState<Slot[]>([]);
   const [count, setCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [copyOpen, setCopyOpen] = useState(false);
   const [copying, setCopying] = useState(false);
   const [copied, setCopied] = useState(false);
+
   const visibleDates = getMonthDates(selectedMonth);
 
   useEffect(() => {
     let active = true;
+
     const apiBase = import.meta.env.DEV
       ? "/backend"
       : import.meta.env.VITE_API_BASE_URL || "";
+
     setLoading(true);
+
     authFetch(
-      `${apiBase}/api/v1/admin/slots/?date=${encodeURIComponent(selectedDate)}`,
+      `${apiBase}/api/v1/admin/slots/?date=${encodeURIComponent(
+        selectedDate
+      )}`
     )
       .then(async (response) => {
         const body = await response.json().catch(() => ({}));
-        if (!response.ok || !body.success)
-          throw new Error(body?.message || "Unable to load slot availability.");
+
+        if (!response.ok || !body.success) {
+          throw new Error(
+            body?.message || "Unable to load slot availability."
+          );
+        }
+
         return body as SlotsResponse;
       })
       .then((result) => {
@@ -78,8 +101,11 @@ export function AvailabilityPage() {
         }
       })
       .finally(() => {
-        if (active) setLoading(false);
+        if (active) {
+          setLoading(false);
+        }
       });
+
     return () => {
       active = false;
     };
@@ -89,36 +115,48 @@ export function AvailabilityPage() {
     const apiBase = import.meta.env.DEV
       ? "/backend"
       : import.meta.env.VITE_API_BASE_URL || "";
+
     setCopying(true);
+
     try {
       const response = await authFetch(
         `${apiBase}/api/v1/admin/slots/copy-next-day/`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ date: selectedDate }),
-        },
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            date: selectedDate,
+          }),
+        }
       );
+
       const body = await response.json().catch(() => ({}));
-      if (!response.ok || !body.success)
+
+      if (!response.ok || !body.success) {
         throw new Error(
-          body?.message || "Unable to copy the previous day’s slots.",
+          body?.message || "Unable to copy the previous day’s slots."
         );
+      }
+
       const result = body as CopySlotsResponse;
+
       setSlots(result.data.slots);
       setCount(result.data.created);
       setCopied(true);
       setCopyOpen(false);
+
       showToast(
         result.message || "Previous day slots copied successfully.",
-        "success",
+        "success"
       );
     } catch (error) {
       showToast(
         error instanceof Error
           ? error.message
           : "Unable to copy previous day slots.",
-        "error",
+        "error"
       );
     } finally {
       setCopying(false);
@@ -130,27 +168,48 @@ export function AvailabilityPage() {
       <div className="page-heading">
         <div>
           <p className="eyebrow">Slot management</p>
+
           <h1>Availability</h1>
+
           <p className="muted">
             Select a month and date to view slot availability.
           </p>
         </div>
+
         <div className="availability-actions">
           <label className="month-picker">
             <span>Month</span>
+
             <input
               type="month"
               value={selectedMonth}
               onChange={(event) => {
                 if (event.target.value) {
-                  setSelectedMonth(event.target.value);
-                  setSelectedDate(`${event.target.value}-01`);
+                  const newMonth = event.target.value;
+
+                  setSelectedMonth(newMonth);
+
+                  /*
+                   * If the selected month is the current month,
+                   * keep today's date active.
+                   *
+                   * Otherwise select the first day of the
+                   * selected month.
+                   */
+                  if (newMonth === currentMonth) {
+                    setSelectedDate(today);
+                  } else {
+                    setSelectedDate(`${newMonth}-01`);
+                  }
+
+                  setCopied(false);
                 }
               }}
             />
           </label>
         </div>
       </div>
+
       <section className="availability-card">
         <div className="date-strip">
           {visibleDates.map((date) => (
@@ -167,7 +226,11 @@ export function AvailabilityPage() {
                   weekday: "short",
                 })}
               </span>
-              <strong>{new Date(`${date}T00:00:00`).getDate()}</strong>
+
+              <strong>
+                {new Date(`${date}T00:00:00`).getDate()}
+              </strong>
+
               <small>
                 {new Date(`${date}T00:00:00`).toLocaleDateString([], {
                   month: "short",
@@ -176,32 +239,39 @@ export function AvailabilityPage() {
             </button>
           ))}
         </div>
+
         <div className="availability-heading">
           <div>
             <h2>{formatDate(selectedDate)}</h2>
+
             <p>
               {count} {count === 1 ? "slot" : "slots"} for this date
             </p>
           </div>
+
           <div className="availability-legend">
             <span>
               <i className="available-dot" />
               Available
             </span>
+
             <span>
               <i className="booked-dot" />
               Booked
             </span>
+
             <span>
               <i className="blocked-dot" />
               Blocked
             </span>
           </div>
         </div>
+
         <div className="availability-slots">
           {loading ? (
             <div className="empty-availability">
               <LoaderCircle className="spin" size={24} />
+
               <p>Loading slots...</p>
             </div>
           ) : slots.length ? (
@@ -213,13 +283,21 @@ export function AvailabilityPage() {
                 <div className="availability-slot-icon">
                   <Clock3 size={19} />
                 </div>
+
                 <div className="availability-slot-info">
                   <strong>
-                    {formatTime(slot.start_time)} – {formatTime(slot.end_time)}
+                    {formatTime(slot.start_time)} –{" "}
+                    {formatTime(slot.end_time)}
                   </strong>
-                  <span>NPR {Number(slot.price).toLocaleString()}</span>
+
+                  <span>
+                    NPR {Number(slot.price).toLocaleString()}
+                  </span>
                 </div>
-                <span className={`slot-status ${slot.status.toLowerCase()}`}>
+
+                <span
+                  className={`slot-status ${slot.status.toLowerCase()}`}
+                >
                   {labelStatus(slot.status)}
                 </span>
               </article>
@@ -227,7 +305,11 @@ export function AvailabilityPage() {
           ) : (
             <div className="empty-availability">
               <CalendarDays size={24} />
-              <p>No slots available for {formatDate(selectedDate)}.</p>
+
+              <p>
+                No slots available for {formatDate(selectedDate)}.
+              </p>
+
               <button
                 className="secondary-button"
                 onClick={() => {
@@ -242,6 +324,7 @@ export function AvailabilityPage() {
           )}
         </div>
       </section>
+
       {copyOpen && (
         <div
           className="modal-backdrop"
@@ -254,8 +337,10 @@ export function AvailabilityPage() {
             <div className="modal-header">
               <div>
                 <p className="eyebrow">Availability</p>
+
                 <h2>Copy previous day</h2>
               </div>
+
               <button
                 type="button"
                 className="modal-close"
@@ -265,15 +350,23 @@ export function AvailabilityPage() {
                 <X size={18} />
               </button>
             </div>
+
             <div className="modal-content">
               <p className="copy-day-description">
                 Copy the previous day’s time slots and prices into this
                 availability view. Copied slots are marked as available.
               </p>
+
               <label className="field">
                 <span>Target date</span>
-                <input type="date" value={selectedDate} readOnly />
+
+                <input
+                  type="date"
+                  value={selectedDate}
+                  readOnly
+                />
               </label>
+
               <div className="modal-actions">
                 <button
                   type="button"
@@ -283,6 +376,7 @@ export function AvailabilityPage() {
                 >
                   Cancel
                 </button>
+
                 <button
                   type="button"
                   className="primary-button"
@@ -314,12 +408,16 @@ export function AvailabilityPage() {
 
 function getMonthDates(month: string) {
   const [year, monthNumber] = month.split("-").map(Number);
+
   const total = new Date(year, monthNumber, 0).getDate();
+
   return Array.from(
     { length: total },
-    (_, index) => `${month}-${String(index + 1).padStart(2, "0")}`,
+    (_, index) =>
+      `${month}-${String(index + 1).padStart(2, "0")}`
   );
 }
+
 function formatDate(value: string) {
   return new Date(`${value}T00:00:00`).toLocaleDateString([], {
     weekday: "long",
@@ -328,10 +426,16 @@ function formatDate(value: string) {
     day: "numeric",
   });
 }
+
 function formatTime(value: string) {
   const [hour, minute] = value.split(":").map(Number);
-  return `${hour % 12 || 12}:${String(minute).padStart(2, "0")} ${hour >= 12 ? "PM" : "AM"}`;
+
+  return `${hour % 12 || 12}:${String(minute).padStart(
+    2,
+    "0"
+  )} ${hour >= 12 ? "PM" : "AM"}`;
 }
+
 function labelStatus(value: string) {
   return value === "AVAILABLE"
     ? "Available"
