@@ -1,1 +1,82 @@
-.add-slot-dialog{width:min(680px,calc(100vw - 32px));padding:0;border:0;border-radius:14px;box-shadow:0 24px 65px #17172845;background:#fff}.add-slot-dialog::backdrop{background:#26263b66}.add-slot-dialog form{color:#3c3d55}.add-slot-dialog header{display:flex;justify-content:space-between;padding:22px 25px;border-bottom:1px solid #ededf3}.add-slot-dialog header p{margin:0 0 8px;color:#9da0b2;font-size:11px}.add-slot-dialog h2{margin:0;font-size:19px}.dialog-close{font-size:26px;line-height:20px;background:none;color:#9c9eb0}.add-slot-fields{display:grid;grid-template-columns:1fr 1fr;gap:16px 18px;padding:24px 25px}.add-slot-fields label{display:grid;gap:7px;color:#696b82;font-size:12px;font-weight:700}.add-slot-fields input,.add-slot-fields select{height:43px;padding:0 12px;border:1px solid #dde0ea;border-radius:8px;background:#fff;color:#56586d;font:inherit;font-size:12px;font-weight:400}.add-slot-dialog footer{display:flex;justify-content:flex-end;gap:10px;padding:0 25px 23px}.add-slot-dialog footer button{min-width:82px;justify-content:center}@media(max-width:600px){.add-slot-fields{grid-template-columns:1fr;padding:20px}.add-slot-dialog header{padding:20px}.add-slot-dialog footer{padding:0 20px 20px}}
+.add-slot-dialog {
+  width: min(680px, calc(100vw - 32px));
+  padding: 0;
+  border: 0;
+  border-radius: 14px;
+  box-shadow: 0 24px 65px #17172845;
+  background: #fff;
+}
+.add-slot-dialog::backdrop {
+  background: #26263b66;
+}
+.add-slot-dialog form {
+  color: #3c3d55;
+}
+.add-slot-dialog header {
+  display: flex;
+  justify-content: space-between;
+  padding: 22px 25px;
+  border-bottom: 1px solid #ededf3;
+}
+.add-slot-dialog header p {
+  margin: 0 0 8px;
+  color: #9da0b2;
+  font-size: 11px;
+}
+.add-slot-dialog h2 {
+  margin: 0;
+  font-size: 19px;
+}
+.dialog-close {
+  font-size: 26px;
+  line-height: 20px;
+  background: none;
+  color: #9c9eb0;
+}
+.add-slot-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px 18px;
+  padding: 24px 25px;
+}
+.add-slot-fields label {
+  display: grid;
+  gap: 7px;
+  color: #696b82;
+  font-size: 12px;
+  font-weight: 700;
+}
+.add-slot-fields input,
+.add-slot-fields select {
+  height: 43px;
+  padding: 0 12px;
+  border: 1px solid #dde0ea;
+  border-radius: 8px;
+  background: #fff;
+  color: #56586d;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 400;
+}
+.add-slot-dialog footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 0 25px 23px;
+}
+.add-slot-dialog footer button {
+  min-width: 82px;
+  justify-content: center;
+}
+@media (max-width: 600px) {
+  .add-slot-fields {
+    grid-template-columns: 1fr;
+    padding: 20px;
+  }
+  .add-slot-dialog header {
+    padding: 20px;
+  }
+  .add-slot-dialog footer {
+    padding: 0 20px 20px;
+  }
+}

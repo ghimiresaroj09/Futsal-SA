@@ -132,7 +132,9 @@ export function BookingsPage() {
   } | null>(null);
   const [reminders, setReminders] = useState<Reminder[]>([]);
   const [loadingReminderHistory, setLoadingReminderHistory] = useState(false);
-  const [rescheduleDate, setRescheduleDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const [rescheduleDate, setRescheduleDate] = useState(() =>
+    new Date().toISOString().slice(0, 10),
+  );
   const [newSlotId, setNewSlotId] = useState("");
   const [addForm, setAddForm] = useState({
     slot_id: "",
@@ -144,7 +146,9 @@ export function BookingsPage() {
     status: "PENDING",
     advance_amount: "",
   });
-  const [slotDate, setSlotDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const [slotDate, setSlotDate] = useState(() =>
+    new Date().toISOString().slice(0, 10),
+  );
   const [availableSlots, setAvailableSlots] = useState<Slot[]>([]);
   const [loadingAvailableSlots, setLoadingAvailableSlots] = useState(false);
   const [addingBooking, setAddingBooking] = useState(false);
@@ -226,7 +230,9 @@ export function BookingsPage() {
       })
       .then((result) => {
         if (!active) return;
-        setAvailableSlots(result.data.results.filter((slot) => slot.status === "AVAILABLE"));
+        setAvailableSlots(
+          result.data.results.filter((slot) => slot.status === "AVAILABLE"),
+        );
       })
       .catch((error: Error) => {
         if (active) {
@@ -292,7 +298,9 @@ export function BookingsPage() {
       })
       .then((result) => {
         if (active) {
-          setAvailableSlots(result.data.results.filter((slot) => slot.status === "AVAILABLE"));
+          setAvailableSlots(
+            result.data.results.filter((slot) => slot.status === "AVAILABLE"),
+          );
         }
       })
       .catch((error: Error) => {
@@ -668,156 +676,171 @@ export function BookingsPage() {
               </tr>
             </thead>
             <tbody>
-              {visible.length ? visible.map((booking, index) => (
-                <tr key={booking.id}>
-                  <td className="sn-col">
-                    {(page - 1) * rowsPerPage + index + 1}
-                  </td>
-                  <td>
-                    <strong className="booking-ref">
-                      {booking.booking_reference}
-                    </strong>
-                    <small className="source-label">
-                      {booking.booking_source}
-                    </small>
-                  </td>
-                  <td>
-                    <strong className="table-name">{booking.full_name}</strong>
-                    <span className="booking-contact">
-                      <Mail size={12} />
-                      {booking.email}
-                    </span>
-                    <span className="booking-contact">
-                      <Phone size={12} />
-                      {booking.phone_number}
-                    </span>
-                  </td>
-                  <td>
-                    <span className="slot-date">
-                      <CalendarDays size={13} />
-                      {booking.slot.date}
-                    </span>
-                    <span className="slot-time">
-                      <Clock3 size={13} />
-                      {formatTime(booking.slot.start_time)} –{" "}
-                      {formatTime(booking.slot.end_time)}
-                    </span>
-                  </td>
-                  <td>
-                    <span className="amount-cell">
-                      NPR {Number(booking.amount).toLocaleString()}
-                    </span>
-                  </td>
-                  <td>
-                    <span className="amount-cell">
-                      NPR {Number(booking.advance_amount || 0).toLocaleString()}
-                    </span>
-                  </td>
-                  <td>
-                    <span className="amount-cell">
-                      NPR {Number(booking.remaining_amount || 0).toLocaleString()}
-                    </span>
-                  </td>
-                  <td>
-                    <span
-                      className={`booking-status ${booking.status.toLowerCase()}`}
-                    >
-                      {labelStatus(booking.status)}
-                    </span>
-                  </td>
-                  <td>
-                    <span
-                      className={`payment-status ${booking.payment_status.toLowerCase()}`}
-                    >
-                      {labelPayment(booking.payment_status)}
-                    </span>
-                  </td>
-                  <td>
-                    <div className="booking-actions">
-                      <button
-                        title="View booking"
-                        aria-label="View booking"
-                        onClick={() => setSelectedBooking(booking)}
-                      >
-                        <Eye size={14} />
-                      </button>
-                      <button
-                        title="Update booking"
-                        aria-label="Update booking"
-                        onClick={() => {
-                          setEditingBooking(booking);
-                          setEditForm({
-                            status: booking.status,
-                            full_name: booking.full_name,
-                            email: booking.email,
-                            phone_number: booking.phone_number,
-                            notes: booking.notes,
-                            reason: booking.cancellation_reason,
-                            advance_amount: booking.advance_amount || "",
-                            payment_method: booking.payment_method || "CASH",
-                          });
-                        }}
-                      >
-                        <Pencil size={14} />
-                      </button>
-                      <button
-                        className="danger-action"
-                        title="Cancel booking"
-                        aria-label="Cancel booking"
-                        onClick={() =>
-                          setConfirmAction({ booking, action: "CANCELLED" })
-                        }
-                      >
-                        <XCircle size={14} />
-                      </button>
-                      <button
-                        className="success-action"
-                        title="Mark as complete"
-                        aria-label="Mark as complete"
-                        onClick={() =>
-                          setConfirmAction({ booking, action: "COMPLETED" })
-                        }
-                      >
-                        <CheckCircle2 size={14} />
-                      </button>
-                      <button
-                        className="reschedule-action"
-                        title="Reschedule booking"
-                        aria-label="Reschedule booking"
-                        onClick={() => {
-                          setRescheduleBooking(booking);
-                          setRescheduleDate(booking.slot.date);
-                          setNewSlotId("");
-                        }}
-                      >
-                        <CalendarClock size={14} />
-                      </button>
-                    </div>
-                  </td>
-                  <td>
-                    <div className="booking-actions reminder-actions">
-                      <button
-                        title="Send reminder"
-                        aria-label="Send reminder"
-                        onClick={() =>
-                          setReminderModal({ booking, mode: "send" })
-                        }
-                      >
-                        <BellRing size={14} />
-                      </button>
-                      <button
-                        title="Reminder history"
-                        aria-label="Reminder history"
-                        onClick={() =>
-                          setReminderModal({ booking, mode: "history" })
-                        }
-                      >
-                        <History size={14} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              )) : !loadingBookings && <tr><td colSpan={11} className="table-empty">No bookings found.</td></tr>}
+              {visible.length
+                ? visible.map((booking, index) => (
+                    <tr key={booking.id}>
+                      <td className="sn-col">
+                        {(page - 1) * rowsPerPage + index + 1}
+                      </td>
+                      <td>
+                        <strong className="booking-ref">
+                          {booking.booking_reference}
+                        </strong>
+                        <small className="source-label">
+                          {booking.booking_source}
+                        </small>
+                      </td>
+                      <td>
+                        <strong className="table-name">
+                          {booking.full_name}
+                        </strong>
+                        <span className="booking-contact">
+                          <Mail size={12} />
+                          {booking.email}
+                        </span>
+                        <span className="booking-contact">
+                          <Phone size={12} />
+                          {booking.phone_number}
+                        </span>
+                      </td>
+                      <td>
+                        <span className="slot-date">
+                          <CalendarDays size={13} />
+                          {booking.slot.date}
+                        </span>
+                        <span className="slot-time">
+                          <Clock3 size={13} />
+                          {formatTime(booking.slot.start_time)} –{" "}
+                          {formatTime(booking.slot.end_time)}
+                        </span>
+                      </td>
+                      <td>
+                        <span className="amount-cell">
+                          NPR {Number(booking.amount).toLocaleString()}
+                        </span>
+                      </td>
+                      <td>
+                        <span className="amount-cell">
+                          NPR{" "}
+                          {Number(booking.advance_amount || 0).toLocaleString()}
+                        </span>
+                      </td>
+                      <td>
+                        <span className="amount-cell">
+                          NPR{" "}
+                          {Number(
+                            booking.remaining_amount || 0,
+                          ).toLocaleString()}
+                        </span>
+                      </td>
+                      <td>
+                        <span
+                          className={`booking-status ${booking.status.toLowerCase()}`}
+                        >
+                          {labelStatus(booking.status)}
+                        </span>
+                      </td>
+                      <td>
+                        <span
+                          className={`payment-status ${booking.payment_status.toLowerCase()}`}
+                        >
+                          {labelPayment(booking.payment_status)}
+                        </span>
+                      </td>
+                      <td>
+                        <div className="booking-actions">
+                          <button
+                            title="View booking"
+                            aria-label="View booking"
+                            onClick={() => setSelectedBooking(booking)}
+                          >
+                            <Eye size={14} />
+                          </button>
+                          <button
+                            title="Update booking"
+                            aria-label="Update booking"
+                            onClick={() => {
+                              setEditingBooking(booking);
+                              setEditForm({
+                                status: booking.status,
+                                full_name: booking.full_name,
+                                email: booking.email,
+                                phone_number: booking.phone_number,
+                                notes: booking.notes,
+                                reason: booking.cancellation_reason,
+                                advance_amount: booking.advance_amount || "",
+                                payment_method:
+                                  booking.payment_method || "CASH",
+                              });
+                            }}
+                          >
+                            <Pencil size={14} />
+                          </button>
+                          <button
+                            className="danger-action"
+                            title="Cancel booking"
+                            aria-label="Cancel booking"
+                            onClick={() =>
+                              setConfirmAction({ booking, action: "CANCELLED" })
+                            }
+                          >
+                            <XCircle size={14} />
+                          </button>
+                          <button
+                            className="success-action"
+                            title="Mark as complete"
+                            aria-label="Mark as complete"
+                            onClick={() =>
+                              setConfirmAction({ booking, action: "COMPLETED" })
+                            }
+                          >
+                            <CheckCircle2 size={14} />
+                          </button>
+                          <button
+                            className="reschedule-action"
+                            title="Reschedule booking"
+                            aria-label="Reschedule booking"
+                            onClick={() => {
+                              setRescheduleBooking(booking);
+                              setRescheduleDate(booking.slot.date);
+                              setNewSlotId("");
+                            }}
+                          >
+                            <CalendarClock size={14} />
+                          </button>
+                        </div>
+                      </td>
+                      <td>
+                        <div className="booking-actions reminder-actions">
+                          <button
+                            title="Send reminder"
+                            aria-label="Send reminder"
+                            onClick={() =>
+                              setReminderModal({ booking, mode: "send" })
+                            }
+                          >
+                            <BellRing size={14} />
+                          </button>
+                          <button
+                            title="Reminder history"
+                            aria-label="Reminder history"
+                            onClick={() =>
+                              setReminderModal({ booking, mode: "history" })
+                            }
+                          >
+                            <History size={14} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                : !loadingBookings && (
+                    <tr>
+                      <td colSpan={11} className="table-empty">
+                        No bookings found.
+                      </td>
+                    </tr>
+                  )}
             </tbody>
           </table>
         </div>
@@ -861,10 +884,7 @@ export function BookingsPage() {
         </div>
       </section>
       {selectedBooking && (
-        <div
-          className="modal-backdrop"
-          onClick={closeBookingDetails}
-        >
+        <div className="modal-backdrop" onClick={closeBookingDetails}>
           <div
             className="contact-modal booking-modal"
             onClick={(event) => event.stopPropagation()}
@@ -1221,19 +1241,18 @@ export function BookingsPage() {
                     required
                   >
                     <option value="">Select a slot</option>
-                    {availableSlots
-                      .map((slot) => (
-                        <option
-                          key={slot.id}
-                          value={slot.id}
-                          disabled={slot.status !== "AVAILABLE"}
-                        >
-                          {formatTime(slot.start_time)} –{" "}
-                          {formatTime(slot.end_time)} · NPR{" "}
-                          {Number(slot.price).toLocaleString()} ·{" "}
-                          {labelSlotStatus(slot.status)}
-                        </option>
-                      ))}
+                    {availableSlots.map((slot) => (
+                      <option
+                        key={slot.id}
+                        value={slot.id}
+                        disabled={slot.status !== "AVAILABLE"}
+                      >
+                        {formatTime(slot.start_time)} –{" "}
+                        {formatTime(slot.end_time)} · NPR{" "}
+                        {Number(slot.price).toLocaleString()} ·{" "}
+                        {labelSlotStatus(slot.status)}
+                      </option>
+                    ))}
                   </select>
                 </label>
               </div>
@@ -1418,19 +1437,18 @@ export function BookingsPage() {
                     required
                   >
                     <option value="">Select a slot</option>
-                    {availableSlots
-                      .map((slot) => (
-                        <option
-                          key={slot.id}
-                          value={slot.id}
-                          disabled={slot.status !== "AVAILABLE"}
-                        >
-                          {formatTime(slot.start_time)} –{" "}
-                          {formatTime(slot.end_time)} · NPR{" "}
-                          {Number(slot.price).toLocaleString()} ·{" "}
-                          {labelSlotStatus(slot.status)}
-                        </option>
-                      ))}
+                    {availableSlots.map((slot) => (
+                      <option
+                        key={slot.id}
+                        value={slot.id}
+                        disabled={slot.status !== "AVAILABLE"}
+                      >
+                        {formatTime(slot.start_time)} –{" "}
+                        {formatTime(slot.end_time)} · NPR{" "}
+                        {Number(slot.price).toLocaleString()} ·{" "}
+                        {labelSlotStatus(slot.status)}
+                      </option>
+                    ))}
                   </select>
                 </label>
               </div>
@@ -1558,39 +1576,43 @@ function ReminderModal({
               <span>{reminderModal.booking.booking_reference}</span>
               <strong>{reminderModal.booking.full_name}</strong>
             </div>
-            {loadingHistory ? <ReminderHistorySkeleton /> : bookingReminders.map((reminder) => (
-              <div className="reminder-history-item" key={reminder.id}>
-                <div
-                  className={`reminder-history-dot ${reminder.status.toLowerCase()}`}
-                >
-                  <CheckCircle2 size={14} />
-                </div>
-                <div>
-                  <strong>
-                    {reminder.reminder_type === "MANUAL"
-                      ? "Manual reminder"
-                      : "Automatic one hour reminder"}
-                  </strong>
-                  <p>
+            {loadingHistory ? (
+              <ReminderHistorySkeleton />
+            ) : (
+              bookingReminders.map((reminder) => (
+                <div className="reminder-history-item" key={reminder.id}>
+                  <div
+                    className={`reminder-history-dot ${reminder.status.toLowerCase()}`}
+                  >
+                    <CheckCircle2 size={14} />
+                  </div>
+                  <div>
+                    <strong>
+                      {reminder.reminder_type === "MANUAL"
+                        ? "Manual reminder"
+                        : "Automatic one hour reminder"}
+                    </strong>
+                    <p>
+                      {reminder.status === "SENT"
+                        ? `Sent at ${formatDate(reminder.sent_at || reminder.scheduled_at)}`
+                        : reminder.status === "FAILED"
+                          ? reminder.error_message || "Failed to send"
+                          : `Scheduled at ${formatDate(reminder.scheduled_at)}`}
+                    </p>
+                    <time>Created {formatDate(reminder.created_at)}</time>
+                  </div>
+                  <span
+                    className={`reminder-delivered ${reminder.status.toLowerCase()}`}
+                  >
                     {reminder.status === "SENT"
-                      ? `Sent at ${formatDate(reminder.sent_at || reminder.scheduled_at)}`
+                      ? "Sent"
                       : reminder.status === "FAILED"
-                        ? reminder.error_message || "Failed to send"
-                        : `Scheduled at ${formatDate(reminder.scheduled_at)}`}
-                  </p>
-                  <time>Created {formatDate(reminder.created_at)}</time>
+                        ? "Failed"
+                        : "Pending"}
+                  </span>
                 </div>
-                <span
-                  className={`reminder-delivered ${reminder.status.toLowerCase()}`}
-                >
-                  {reminder.status === "SENT"
-                    ? "Sent"
-                    : reminder.status === "FAILED"
-                      ? "Failed"
-                      : "Pending"}
-                </span>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         )}
       </div>
@@ -1599,7 +1621,25 @@ function ReminderModal({
 }
 
 function ReminderHistorySkeleton() {
-  return <div className="reminder-history-skeleton" aria-busy="true" aria-label="Loading reminder history">{Array.from({ length: 3 }, (_, index) => <div className="reminder-history-item" key={index}><i className="reminder-skeleton-dot" /><div><i className="reminder-skeleton-title" /><i className="reminder-skeleton-copy" /><i className="reminder-skeleton-time" /></div><i className="reminder-skeleton-status" /></div>)}</div>
+  return (
+    <div
+      className="reminder-history-skeleton"
+      aria-busy="true"
+      aria-label="Loading reminder history"
+    >
+      {Array.from({ length: 3 }, (_, index) => (
+        <div className="reminder-history-item" key={index}>
+          <i className="reminder-skeleton-dot" />
+          <div>
+            <i className="reminder-skeleton-title" />
+            <i className="reminder-skeleton-copy" />
+            <i className="reminder-skeleton-time" />
+          </div>
+          <i className="reminder-skeleton-status" />
+        </div>
+      ))}
+    </div>
+  );
 }
 
 function ModalData({ label, value }: { label: string; value: string }) {

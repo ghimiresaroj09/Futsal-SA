@@ -1,1 +1,82 @@
-.security-page{max-width:760px}.password-card{background:#fff;border:1px solid var(--line);border-radius:13px;box-shadow:0 2px 5px #30305003;overflow:hidden}.security-intro{display:flex;align-items:center;gap:14px;padding:26px 28px;border-bottom:1px solid #f0f0f4}.security-icon{width:43px;height:43px;display:grid;place-items:center;border-radius:11px;background:#f0efff;color:#7569e8}.security-intro h2{font-size:14px;color:#36374d;margin:0}.security-intro p{font-size:11px;color:#a0a2b2;margin:6px 0 0}.password-fields{display:grid;gap:19px;padding:27px 28px}.password-input{height:40px;display:flex;align-items:center;gap:9px;padding:0 11px;border:1px solid #e2e3eb;border-radius:7px;color:#a8aaba;transition:.2s}.password-input:focus-within{border-color:#887eef;box-shadow:0 0 0 3px #7569e817}.password-input input{border:0;outline:0;flex:1;min-width:0;color:#4b4d63;font-size:12px;background:transparent}.password-input button{display:grid;place-items:center;padding:3px;background:none;color:#a4a6b6}.password-card .form-actions{border-top:1px solid #f0f0f4}@media(max-width:600px){.security-intro,.password-fields{padding-left:18px;padding-right:18px}}
+.security-page {
+  max-width: 760px;
+}
+.password-card {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  box-shadow: 0 2px 5px #30305003;
+  overflow: hidden;
+}
+.security-intro {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 26px 28px;
+  border-bottom: 1px solid #f0f0f4;
+}
+.security-icon {
+  width: 43px;
+  height: 43px;
+  display: grid;
+  place-items: center;
+  border-radius: 11px;
+  background: #f0efff;
+  color: #7569e8;
+}
+.security-intro h2 {
+  font-size: 14px;
+  color: #36374d;
+  margin: 0;
+}
+.security-intro p {
+  font-size: 11px;
+  color: #a0a2b2;
+  margin: 6px 0 0;
+}
+.password-fields {
+  display: grid;
+  gap: 19px;
+  padding: 27px 28px;
+}
+.password-input {
+  height: 40px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 0 11px;
+  border: 1px solid #e2e3eb;
+  border-radius: 7px;
+  color: #a8aaba;
+  transition: 0.2s;
+}
+.password-input:focus-within {
+  border-color: #887eef;
+  box-shadow: 0 0 0 3px #7569e817;
+}
+.password-input input {
+  border: 0;
+  outline: 0;
+  flex: 1;
+  min-width: 0;
+  color: #4b4d63;
+  font-size: 12px;
+  background: transparent;
+}
+.password-input button {
+  display: grid;
+  place-items: center;
+  padding: 3px;
+  background: none;
+  color: #a4a6b6;
+}
+.password-card .form-actions {
+  border-top: 1px solid #f0f0f4;
+}
+@media (max-width: 600px) {
+  .security-intro,
+  .password-fields {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+}

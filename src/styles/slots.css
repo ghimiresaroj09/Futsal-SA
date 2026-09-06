@@ -1,1 +1,150 @@
-.slots-page{max-width:1100px}.view-toggle{display:flex;gap:4px;margin-left:4px}.view-toggle button{width:32px;height:32px;display:grid;place-items:center;border:1px solid #e2e3eb;border-radius:6px;background:#fff;color:#9a9cac}.view-toggle button.active,.view-toggle button:hover{background:#f0efff;border-color:#d9d5ff;color:#6659d8}.slots-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;padding:20px 22px}.slot-card{padding:18px;border:1px solid var(--line);border-radius:11px;background:#fff;box-shadow:0 2px 5px #30305005}.slot-card-top,.slot-card-bottom{display:flex;justify-content:space-between;align-items:center}.slot-card-time{display:flex;align-items:center;gap:8px;margin:22px 0;color:#55576c}.slot-card-time svg{color:#7569e8}.slot-card-bottom{padding-top:14px;border-top:1px solid #f0f0f4}.slot-card-bottom span{font-size:10px;color:#a2a4b2}.slot-card-bottom strong{font-size:13px;color:#55576c}.slot-card small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#b0b2bf;font-size:9px;margin-top:14px}.slot-row-actions,.slot-card-actions{display:flex;gap:6px}.slot-row-actions button,.slot-card-actions button{width:28px;height:28px;display:grid;place-items:center;border:1px solid #e2e3eb;border-radius:6px;background:#fff;color:#7569e8}.slot-row-actions button:hover,.slot-card-actions button:hover{background:#f0efff;border-color:#9b92f0}.slot-row-actions .slot-delete-action,.slot-card-actions .slot-delete-action{color:#d86572}.slot-card-actions{margin-top:12px}.slots-table{min-width:800px}@media(max-width:800px){.slots-grid{grid-template-columns:repeat(2,1fr)}}@media(max-width:560px){.slots-grid{grid-template-columns:1fr}.slots-grid{padding:16px}}.slot-date-filter{height:34px;border:1px solid #e2e3eb;border-radius:7px;padding:0 9px;color:#686a7e;font-size:11px;background:#fff}.slot-price{font-size:12px;color:#55576c}.slot-status{display:inline-flex;border-radius:14px;padding:5px 8px;font-size:9px;font-weight:700}.slot-status.available{background:#eaf9f2;color:#2da978}.slot-status.booked{background:#f0efff;color:#6659d8}.slot-status.blocked{background:#fff0f1;color:#d86572}
+.slots-page {
+  max-width: 1100px;
+}
+.view-toggle {
+  display: flex;
+  gap: 4px;
+  margin-left: 4px;
+}
+.view-toggle button {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #e2e3eb;
+  border-radius: 6px;
+  background: #fff;
+  color: #9a9cac;
+}
+.view-toggle button.active,
+.view-toggle button:hover {
+  background: #f0efff;
+  border-color: #d9d5ff;
+  color: #6659d8;
+}
+.slots-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  padding: 20px 22px;
+}
+.slot-card {
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: #fff;
+  box-shadow: 0 2px 5px #30305005;
+}
+.slot-card-top,
+.slot-card-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.slot-card-time {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 22px 0;
+  color: #55576c;
+}
+.slot-card-time svg {
+  color: #7569e8;
+}
+.slot-card-bottom {
+  padding-top: 14px;
+  border-top: 1px solid #f0f0f4;
+}
+.slot-card-bottom span {
+  font-size: 10px;
+  color: #a2a4b2;
+}
+.slot-card-bottom strong {
+  font-size: 13px;
+  color: #55576c;
+}
+.slot-card small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #b0b2bf;
+  font-size: 9px;
+  margin-top: 14px;
+}
+.slot-row-actions,
+.slot-card-actions {
+  display: flex;
+  gap: 6px;
+}
+.slot-row-actions button,
+.slot-card-actions button {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #e2e3eb;
+  border-radius: 6px;
+  background: #fff;
+  color: #7569e8;
+}
+.slot-row-actions button:hover,
+.slot-card-actions button:hover {
+  background: #f0efff;
+  border-color: #9b92f0;
+}
+.slot-row-actions .slot-delete-action,
+.slot-card-actions .slot-delete-action {
+  color: #d86572;
+}
+.slot-card-actions {
+  margin-top: 12px;
+}
+.slots-table {
+  min-width: 800px;
+}
+@media (max-width: 800px) {
+  .slots-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 560px) {
+  .slots-grid {
+    grid-template-columns: 1fr;
+  }
+  .slots-grid {
+    padding: 16px;
+  }
+}
+.slot-date-filter {
+  height: 34px;
+  border: 1px solid #e2e3eb;
+  border-radius: 7px;
+  padding: 0 9px;
+  color: #686a7e;
+  font-size: 11px;
+  background: #fff;
+}
+.slot-price {
+  font-size: 12px;
+  color: #55576c;
+}
+.slot-status {
+  display: inline-flex;
+  border-radius: 14px;
+  padding: 5px 8px;
+  font-size: 9px;
+  font-weight: 700;
+}
+.slot-status.available {
+  background: #eaf9f2;
+  color: #2da978;
+}
+.slot-status.booked {
+  background: #f0efff;
+  color: #6659d8;
+}
+.slot-status.blocked {
+  background: #fff0f1;
+  color: #d86572;
+}

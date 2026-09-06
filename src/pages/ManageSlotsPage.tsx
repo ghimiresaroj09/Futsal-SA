@@ -1,74 +1,671 @@
-import { CalendarDays, ChevronLeft, ChevronRight, Clock3, Eye, LoaderCircle, Pencil, Search, Trash2, X } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
-import { useToast } from '../components/ui/Toast'
-import { authFetch, authFetchAll } from '../lib/api'
-import { PageSkeleton } from '../components/ui/PageSkeleton'
+import {
+  CalendarDays,
+  ChevronLeft,
+  ChevronRight,
+  Clock3,
+  Eye,
+  LoaderCircle,
+  Pencil,
+  Search,
+  Trash2,
+  X,
+} from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { useToast } from "../components/ui/Toast";
+import { authFetch, authFetchAll } from "../lib/api";
+import { PageSkeleton } from "../components/ui/PageSkeleton";
 
-type Slot = { id: string; date: string; start_time: string; end_time: string; price: string; status: string; created_at: string; updated_at?: string }
-type SlotsResponse = { success: boolean; message: string; data: { count: number; next: string | null; previous: string | null; results: Slot[] } }
-type SlotDetailsResponse = { success: boolean; message: string; data: Slot }
-type CreateSlotResponse = { success: boolean; message: string; data: Slot }
-type UpdateSlotResponse = { success: boolean; message: string; data: Slot }
-type DeleteSlotResponse = { success: boolean; message: string; data: { id: string } }
+type Slot = {
+  id: string;
+  date: string;
+  start_time: string;
+  end_time: string;
+  price: string;
+  status: string;
+  created_at: string;
+  updated_at?: string;
+};
+type SlotsResponse = {
+  success: boolean;
+  message: string;
+  data: {
+    count: number;
+    next: string | null;
+    previous: string | null;
+    results: Slot[];
+  };
+};
+type SlotDetailsResponse = { success: boolean; message: string; data: Slot };
+type CreateSlotResponse = { success: boolean; message: string; data: Slot };
+type UpdateSlotResponse = { success: boolean; message: string; data: Slot };
+type DeleteSlotResponse = {
+  success: boolean;
+  message: string;
+  data: { id: string };
+};
 
 export function ManageSlotsPage() {
-  const { showToast } = useToast()
-  const [slots, setSlots] = useState<Slot[]>([]); const [count, setCount] = useState(0); const [next, setNext] = useState<string | null>(null); const [previous, setPrevious] = useState<string | null>(null)
-  const [rows, setRows] = useState(10); const [currentPage, setCurrentPage] = useState(1); const [loading, setLoading] = useState(true); const [query, setQuery] = useState(''); const [date, setDate] = useState(''); const [status, setStatus] = useState('ALL')
-  const [view, setView] = useState<'list' | 'grid'>('list')
-  const [selected, setSelected] = useState<Slot | null>(null); const [action, setAction] = useState<'view' | 'edit' | 'delete' | null>(null); const [editForm, setEditForm] = useState({ date: '', start_time: '', end_time: '', price: '', status: 'AVAILABLE' }); const [saving, setSaving] = useState(false); const [deleting, setDeleting] = useState(false)
+  const { showToast } = useToast();
+  const [slots, setSlots] = useState<Slot[]>([]);
+  const [count, setCount] = useState(0);
+  const [next, setNext] = useState<string | null>(null);
+  const [previous, setPrevious] = useState<string | null>(null);
+  const [rows, setRows] = useState(10);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [query, setQuery] = useState("");
+  const [date, setDate] = useState("");
+  const [status, setStatus] = useState("ALL");
+  const [view, setView] = useState<"list" | "grid">("list");
+  const [selected, setSelected] = useState<Slot | null>(null);
+  const [action, setAction] = useState<"view" | "edit" | "delete" | null>(null);
+  const [editForm, setEditForm] = useState({
+    date: "",
+    start_time: "",
+    end_time: "",
+    price: "",
+    status: "AVAILABLE",
+  });
+  const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const load = async () => {
-    if (!slots.length) setLoading(true); const apiBase = import.meta.env.DEV ? '/backend' : (import.meta.env.VITE_API_BASE_URL || '')
-    try { const result = await authFetchAll<Slot>(`${apiBase}/api/v1/admin/slots/`); setSlots(result); setCount(result.length); setNext(null); setPrevious(null) } catch (error) { showToast(error instanceof Error ? error.message : 'Unable to load slots.', 'error') } finally { setLoading(false) }
-  }
-  useEffect(() => { setCurrentPage(1); void load() }, [rows])
+    if (!slots.length) setLoading(true);
+    const apiBase = import.meta.env.DEV
+      ? "/backend"
+      : import.meta.env.VITE_API_BASE_URL || "";
+    try {
+      const result = await authFetchAll<Slot>(`${apiBase}/api/v1/admin/slots/`);
+      setSlots(result);
+      setCount(result.length);
+      setNext(null);
+      setPrevious(null);
+    } catch (error) {
+      showToast(
+        error instanceof Error ? error.message : "Unable to load slots.",
+        "error",
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
   useEffect(() => {
-    const heading = document.querySelector('.slots-page .page-heading')
-    if (!heading || heading.querySelector('.add-slot-trigger')) return
-    const button = document.createElement('button'); button.className = 'primary-button add-slot-trigger'; button.innerHTML = '<span>＋</span>Add slot'
-    const dialog = document.createElement('dialog'); dialog.className = 'add-slot-dialog'
-    dialog.innerHTML = '<form method="dialog"><header><div><p>Slot management</p><h2>Add slot</h2></div><button type="button" class="dialog-close">×</button></header><div class="add-slot-fields"><label>Date<input name="date" type="date" required></label><label>Status<select name="status"><option value="AVAILABLE">Available</option><option value="BOOKED">Booked</option><option value="BLOCKED">Blocked</option></select></label><label>Start time<input name="start" type="time" required></label><label>End time<input name="end" type="time" required></label><label>Price<input name="price" type="number" min="0" step="0.01" value="2000.00" required></label></div><footer><button type="button" class="secondary-button">Cancel</button><button type="submit" value="default" class="primary-button">Add slot</button></footer></form>'
-    button.onclick = () => { const form = dialog.querySelector('form') as HTMLFormElement; form.reset(); (form.elements.namedItem('price') as HTMLInputElement).value = '2000.00'; dialog.showModal() }
-    dialog.querySelector('.dialog-close')?.addEventListener('click', () => dialog.close('cancel'))
-    dialog.querySelector('.secondary-button')?.addEventListener('click', () => dialog.close('cancel'))
-    dialog.addEventListener('click', (event) => { if (event.target === dialog) dialog.close('cancel') })
-    dialog.addEventListener('close', async () => { if (dialog.returnValue !== 'default') return; const form = dialog.querySelector('form') as HTMLFormElement; const data = new FormData(form); const date = String(data.get('date')); const start = String(data.get('start')); const end = String(data.get('end')); if (!date || !start || !end) return; const apiBase = import.meta.env.DEV ? '/backend' : (import.meta.env.VITE_API_BASE_URL || ''); try { const response = await authFetch(`${apiBase}/api/v1/admin/slots/`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ date, start_time: `${start}:00.000Z`, end_time: `${end}:00.000Z`, price: String(data.get('price')), status: String(data.get('status')) }) }); const body = await response.json().catch(() => ({})); if (!response.ok || !body.success) throw new Error(body?.message || 'Unable to create slot.'); const result = body as CreateSlotResponse; setSlots((items) => [result.data, ...items]); setCount((current) => current + 1); form.reset(); (form.elements.namedItem('price') as HTMLInputElement).value = '2000.00'; showToast(result.message, 'success') } catch (error) { showToast(error instanceof Error ? error.message : 'Unable to create slot.', 'error') } })
-    heading.append(button); document.body.append(dialog)
-    return () => { button.remove(); dialog.remove() }
-  }, [slots])
+    setCurrentPage(1);
+    void load();
+  }, [rows]);
   useEffect(() => {
-    if (action !== 'view' || !selected) return
-    let active = true
-    const apiBase = import.meta.env.DEV ? '/backend' : (import.meta.env.VITE_API_BASE_URL || '')
+    const heading = document.querySelector(".slots-page .page-heading");
+    if (!heading || heading.querySelector(".add-slot-trigger")) return;
+    const button = document.createElement("button");
+    button.className = "primary-button add-slot-trigger";
+    button.innerHTML = "<span>＋</span>Add slot";
+    const dialog = document.createElement("dialog");
+    dialog.className = "add-slot-dialog";
+    dialog.innerHTML =
+      '<form method="dialog"><header><div><p>Slot management</p><h2>Add slot</h2></div><button type="button" class="dialog-close">×</button></header><div class="add-slot-fields"><label>Date<input name="date" type="date" required></label><label>Status<select name="status"><option value="AVAILABLE">Available</option><option value="BOOKED">Booked</option><option value="BLOCKED">Blocked</option></select></label><label>Start time<input name="start" type="time" required></label><label>End time<input name="end" type="time" required></label><label>Price<input name="price" type="number" min="0" step="0.01" value="2000.00" required></label></div><footer><button type="button" class="secondary-button">Cancel</button><button type="submit" value="default" class="primary-button">Add slot</button></footer></form>';
+    button.onclick = () => {
+      const form = dialog.querySelector("form") as HTMLFormElement;
+      form.reset();
+      (form.elements.namedItem("price") as HTMLInputElement).value = "2000.00";
+      dialog.showModal();
+    };
+    dialog
+      .querySelector(".dialog-close")
+      ?.addEventListener("click", () => dialog.close("cancel"));
+    dialog
+      .querySelector(".secondary-button")
+      ?.addEventListener("click", () => dialog.close("cancel"));
+    dialog.addEventListener("click", (event) => {
+      if (event.target === dialog) dialog.close("cancel");
+    });
+    dialog.addEventListener("close", async () => {
+      if (dialog.returnValue !== "default") return;
+      const form = dialog.querySelector("form") as HTMLFormElement;
+      const data = new FormData(form);
+      const date = String(data.get("date"));
+      const start = String(data.get("start"));
+      const end = String(data.get("end"));
+      if (!date || !start || !end) return;
+      const apiBase = import.meta.env.DEV
+        ? "/backend"
+        : import.meta.env.VITE_API_BASE_URL || "";
+      try {
+        const response = await authFetch(`${apiBase}/api/v1/admin/slots/`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            date,
+            start_time: `${start}:00.000Z`,
+            end_time: `${end}:00.000Z`,
+            price: String(data.get("price")),
+            status: String(data.get("status")),
+          }),
+        });
+        const body = await response.json().catch(() => ({}));
+        if (!response.ok || !body.success)
+          throw new Error(body?.message || "Unable to create slot.");
+        const result = body as CreateSlotResponse;
+        setSlots((items) => [result.data, ...items]);
+        setCount((current) => current + 1);
+        form.reset();
+        (form.elements.namedItem("price") as HTMLInputElement).value =
+          "2000.00";
+        showToast(result.message, "success");
+      } catch (error) {
+        showToast(
+          error instanceof Error ? error.message : "Unable to create slot.",
+          "error",
+        );
+      }
+    });
+    heading.append(button);
+    document.body.append(dialog);
+    return () => {
+      button.remove();
+      dialog.remove();
+    };
+  }, [slots]);
+  useEffect(() => {
+    if (action !== "view" || !selected) return;
+    let active = true;
+    const apiBase = import.meta.env.DEV
+      ? "/backend"
+      : import.meta.env.VITE_API_BASE_URL || "";
     authFetch(`${apiBase}/api/v1/admin/slots/${selected.id}/`)
-      .then(async (response) => { const body = await response.json().catch(() => ({})); if (!response.ok || !body.success) throw new Error(body?.message || 'Unable to load slot details.'); return body as SlotDetailsResponse })
-      .then((result) => { if (active) setSelected(result.data) })
-      .catch((error: Error) => { if (active) showToast(error.message, 'error') })
-    return () => { active = false }
-  }, [action, selected?.id])
+      .then(async (response) => {
+        const body = await response.json().catch(() => ({}));
+        if (!response.ok || !body.success)
+          throw new Error(body?.message || "Unable to load slot details.");
+        return body as SlotDetailsResponse;
+      })
+      .then((result) => {
+        if (active) setSelected(result.data);
+      })
+      .catch((error: Error) => {
+        if (active) showToast(error.message, "error");
+      });
+    return () => {
+      active = false;
+    };
+  }, [action, selected?.id]);
   useEffect(() => {
-    const controls = document.querySelector('.slots-page .table-controls')
-    const table = document.querySelector('.slots-page .slots-table')
-    if (!controls || !table) return
-    table.classList.toggle('slots-grid-view', view === 'grid')
-    const toggle = document.createElement('div')
-    toggle.className = 'view-toggle'
-    toggle.innerHTML = `<button type="button" aria-label="List view" class="${view === 'list' ? 'active' : ''}">☰</button><button type="button" aria-label="Grid view" class="${view === 'grid' ? 'active' : ''}">▦</button>`
-    toggle.children[0].addEventListener('click', () => setView('list'))
-    toggle.children[1].addEventListener('click', () => setView('grid'))
-    controls.append(toggle)
-    return () => toggle.remove()
-  }, [view, slots])
-  const filtered = useMemo(() => slots.filter((slot) => `${slot.date} ${slot.start_time} ${slot.end_time} ${slot.status} ${slot.price}`.toLowerCase().includes(query.toLowerCase()) && (!date || slot.date === date) && (status === 'ALL' || slot.status === status)), [slots, query, date, status])
-  const totalPages = Math.max(1, Math.ceil(filtered.length / rows))
-  const visible = filtered.slice((currentPage - 1) * rows, currentPage * rows)
-  const openEdit = (slot: Slot) => { setSelected(slot); setEditForm({ date: slot.date, start_time: slot.start_time.slice(0, 5), end_time: slot.end_time.slice(0, 5), price: slot.price, status: slot.status }); setAction('edit') }
-  const saveEdit = async (event: React.FormEvent) => { event.preventDefault(); if (!selected) return; if (editForm.end_time <= editForm.start_time) { showToast('End time must be later than start time.', 'error'); return }; setSaving(true); const apiBase = import.meta.env.DEV ? '/backend' : (import.meta.env.VITE_API_BASE_URL || ''); try { const response = await authFetch(`${apiBase}/api/v1/admin/slots/${selected.id}/`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ date: editForm.date, start_time: `${editForm.start_time}:00.000Z`, end_time: `${editForm.end_time}:00.000Z`, price: editForm.price, status: editForm.status }) }); const body = await response.json().catch(() => ({})); if (!response.ok || !body.success) throw new Error(body?.message || 'Unable to update slot.'); const result = body as UpdateSlotResponse; setSlots((items) => items.map((slot) => slot.id === selected.id ? result.data : slot)); setAction(null); showToast(result.message || 'Slot updated successfully.', 'success') } catch (error) { showToast(error instanceof Error ? error.message : 'Unable to update slot.', 'error') } finally { setSaving(false) } }
-  const remove = async () => { if (!selected) return; setDeleting(true); const apiBase = import.meta.env.DEV ? '/backend' : (import.meta.env.VITE_API_BASE_URL || ''); try { const response = await authFetch(`${apiBase}/api/v1/admin/slots/${selected.id}/`, { method: 'DELETE' }); const body = await response.json().catch(() => ({})); if (!response.ok || !body.success) throw new Error(body?.message || 'Unable to delete slot.'); const result = body as DeleteSlotResponse; setSlots((items) => items.filter((slot) => slot.id !== result.data.id)); setCount((current) => Math.max(0, current - 1)); setAction(null); showToast(result.message || 'Slot deleted successfully.', 'success') } catch (error) { showToast(error instanceof Error ? error.message : 'Unable to delete slot.', 'error') } finally { setDeleting(false) } }
-  if (loading) return <PageSkeleton variant="table" eyebrow="Slot management" title="Manage Slots" description="Create, update, and manage your facility slots." />
-  return <div className="slots-page"><div className="page-heading"><div><p className="eyebrow">Slot management</p><h1>Manage Slots</h1><p className="muted">View and manage the slots available at your facility.</p></div></div><section className="table-card"><div className="table-toolbar"><div><h2>All slots</h2><p>{filtered.length} total slots</p></div><div className="table-controls"><label className="table-search"><Search size={16}/><input value={query} onChange={(e) => { setQuery(e.target.value); setCurrentPage(1) }} placeholder="Search slots" /></label><input className="slot-date-filter" type="date" value={date} onChange={(e) => { setDate(e.target.value); setCurrentPage(1) }} /><select className="booking-filter" value={status} onChange={(e) => { setStatus(e.target.value); setCurrentPage(1) }}><option value="ALL">All statuses</option><option value="AVAILABLE">Available</option><option value="BOOKED">Booked</option><option value="BLOCKED">Blocked</option></select></div></div><div className="table-scroll"><table className="slots-table"><thead><tr><th className="sn-col">SN</th><th>Date</th><th>Time</th><th>Price</th><th>Status</th><th>Created at</th><th>Action</th></tr></thead><tbody>{visible.length ? visible.map((slot, index) => <tr key={slot.id}><td className="sn-col">{(currentPage - 1) * rows + index + 1}</td><td><span className="slot-date"><CalendarDays size={14}/>{formatDate(slot.date)}</span></td><td><span className="slot-time"><Clock3 size={14}/>{formatTime(slot.start_time)} – {formatTime(slot.end_time)}</span></td><td><strong className="slot-price">NPR {Number(slot.price).toLocaleString()}</strong></td><td><span className={`slot-status ${slot.status.toLowerCase()}`}>{labelStatus(slot.status)}</span></td><td><span className="created-date">{formatDateTime(slot.created_at)}</span></td><td><div className="slot-row-actions"><button onClick={() => { setSelected(slot); setAction('view') }} title="View slot"><Eye size={14}/></button><button onClick={() => openEdit(slot)} title="Update slot"><Pencil size={14}/></button><button className="slot-delete-action" onClick={() => { setSelected(slot); setAction('delete') }} title="Delete slot"><Trash2 size={14}/></button></div></td></tr>) : <tr><td colSpan={7} className="table-empty">No slots found.</td></tr>}</tbody></table></div><div className="table-footer"><label className="booking-rows-select">Rows per page<select value={rows} onChange={(e) => setRows(Number(e.target.value))}><option value={10}>10</option><option value={20}>20</option><option value={50}>50</option></select></label><span className="page-count">{filtered.length ? (currentPage - 1) * rows + 1 : 0}–{Math.min(currentPage * rows, filtered.length)} of {filtered.length}</span><div className="pagination"><button disabled={currentPage === 1} onClick={() => setCurrentPage((current) => current - 1)}><ChevronLeft size={16}/></button><span className="slots-page-label">Page {currentPage} of {totalPages}</span><button disabled={currentPage >= totalPages} onClick={() => setCurrentPage((current) => current + 1)}><ChevronRight size={16}/></button></div></div></section>{action && selected && <div className="modal-backdrop" onClick={() => !saving && !deleting && setAction(null)}>{action === 'view' ? <div className="contact-modal booking-modal" onClick={(e) => e.stopPropagation()}><div className="modal-header"><h2>Slot details</h2><button className="modal-close" onClick={() => setAction(null)}><X size={18}/></button></div><div className="modal-content"><p><b>Date:</b> {formatDate(selected.date)}</p><p><b>Time:</b> {formatTime(selected.start_time)} – {formatTime(selected.end_time)}</p><p><b>Price:</b> NPR {Number(selected.price).toLocaleString()}</p><p><b>Status:</b> {labelStatus(selected.status)}</p></div></div> : action === 'edit' ? <form className="add-slot-dialog" onClick={(e) => e.stopPropagation()} onSubmit={saveEdit}><header><div><p>Slot management</p><h2>Update slot</h2></div><button type="button" className="dialog-close" onClick={() => setAction(null)} disabled={saving}>×</button></header><div className="add-slot-fields"><label>Date<input type="date" value={editForm.date} onChange={(e) => setEditForm({ ...editForm, date: e.target.value })} required /></label><label>Status<select value={editForm.status} onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}><option value="AVAILABLE">Available</option><option value="BOOKED">Booked</option><option value="BLOCKED">Blocked</option></select></label><label>Start time<input type="time" value={editForm.start_time} onChange={(e) => setEditForm({ ...editForm, start_time: e.target.value })} required /></label><label>End time<input type="time" value={editForm.end_time} onChange={(e) => setEditForm({ ...editForm, end_time: e.target.value })} required /></label><label>Price<input type="number" min="0" step="0.01" value={editForm.price} onChange={(e) => setEditForm({ ...editForm, price: e.target.value })} required /></label></div><footer><button type="button" className="secondary-button" onClick={() => setAction(null)} disabled={saving}>Cancel</button><button type="submit" className="primary-button" disabled={saving}>{saving ? 'Updating...' : 'Update slot'}</button></footer></form> : <div className="confirmation-modal" onClick={(e) => e.stopPropagation()}><div className="confirmation-icon confirm-danger"><Trash2 size={22}/></div><h2>Delete this slot?</h2><p>This action cannot be undone.</p><div className="confirmation-actions"><button className="secondary-button" onClick={() => setAction(null)} disabled={deleting}>Cancel</button><button className="danger-button" onClick={() => void remove()} disabled={deleting}>{deleting ? 'Deleting...' : 'Delete slot'}</button></div></div>}</div>}</div>
+    const controls = document.querySelector(".slots-page .table-controls");
+    const table = document.querySelector(".slots-page .slots-table");
+    if (!controls || !table) return;
+    table.classList.toggle("slots-grid-view", view === "grid");
+    const toggle = document.createElement("div");
+    toggle.className = "view-toggle";
+    toggle.innerHTML = `<button type="button" aria-label="List view" class="${view === "list" ? "active" : ""}">☰</button><button type="button" aria-label="Grid view" class="${view === "grid" ? "active" : ""}">▦</button>`;
+    toggle.children[0].addEventListener("click", () => setView("list"));
+    toggle.children[1].addEventListener("click", () => setView("grid"));
+    controls.append(toggle);
+    return () => toggle.remove();
+  }, [view, slots]);
+  const filtered = useMemo(
+    () =>
+      slots.filter(
+        (slot) =>
+          `${slot.date} ${slot.start_time} ${slot.end_time} ${slot.status} ${slot.price}`
+            .toLowerCase()
+            .includes(query.toLowerCase()) &&
+          (!date || slot.date === date) &&
+          (status === "ALL" || slot.status === status),
+      ),
+    [slots, query, date, status],
+  );
+  const totalPages = Math.max(1, Math.ceil(filtered.length / rows));
+  const visible = filtered.slice((currentPage - 1) * rows, currentPage * rows);
+  const openEdit = (slot: Slot) => {
+    setSelected(slot);
+    setEditForm({
+      date: slot.date,
+      start_time: slot.start_time.slice(0, 5),
+      end_time: slot.end_time.slice(0, 5),
+      price: slot.price,
+      status: slot.status,
+    });
+    setAction("edit");
+  };
+  const saveEdit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!selected) return;
+    if (editForm.end_time <= editForm.start_time) {
+      showToast("End time must be later than start time.", "error");
+      return;
+    }
+    setSaving(true);
+    const apiBase = import.meta.env.DEV
+      ? "/backend"
+      : import.meta.env.VITE_API_BASE_URL || "";
+    try {
+      const response = await authFetch(
+        `${apiBase}/api/v1/admin/slots/${selected.id}/`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            date: editForm.date,
+            start_time: `${editForm.start_time}:00.000Z`,
+            end_time: `${editForm.end_time}:00.000Z`,
+            price: editForm.price,
+            status: editForm.status,
+          }),
+        },
+      );
+      const body = await response.json().catch(() => ({}));
+      if (!response.ok || !body.success)
+        throw new Error(body?.message || "Unable to update slot.");
+      const result = body as UpdateSlotResponse;
+      setSlots((items) =>
+        items.map((slot) => (slot.id === selected.id ? result.data : slot)),
+      );
+      setAction(null);
+      showToast(result.message || "Slot updated successfully.", "success");
+    } catch (error) {
+      showToast(
+        error instanceof Error ? error.message : "Unable to update slot.",
+        "error",
+      );
+    } finally {
+      setSaving(false);
+    }
+  };
+  const remove = async () => {
+    if (!selected) return;
+    setDeleting(true);
+    const apiBase = import.meta.env.DEV
+      ? "/backend"
+      : import.meta.env.VITE_API_BASE_URL || "";
+    try {
+      const response = await authFetch(
+        `${apiBase}/api/v1/admin/slots/${selected.id}/`,
+        { method: "DELETE" },
+      );
+      const body = await response.json().catch(() => ({}));
+      if (!response.ok || !body.success)
+        throw new Error(body?.message || "Unable to delete slot.");
+      const result = body as DeleteSlotResponse;
+      setSlots((items) => items.filter((slot) => slot.id !== result.data.id));
+      setCount((current) => Math.max(0, current - 1));
+      setAction(null);
+      showToast(result.message || "Slot deleted successfully.", "success");
+    } catch (error) {
+      showToast(
+        error instanceof Error ? error.message : "Unable to delete slot.",
+        "error",
+      );
+    } finally {
+      setDeleting(false);
+    }
+  };
+  if (loading)
+    return (
+      <PageSkeleton
+        variant="table"
+        eyebrow="Slot management"
+        title="Manage Slots"
+        description="Create, update, and manage your facility slots."
+      />
+    );
+  return (
+    <div className="slots-page">
+      <div className="page-heading">
+        <div>
+          <p className="eyebrow">Slot management</p>
+          <h1>Manage Slots</h1>
+          <p className="muted">
+            View and manage the slots available at your facility.
+          </p>
+        </div>
+      </div>
+      <section className="table-card">
+        <div className="table-toolbar">
+          <div>
+            <h2>All slots</h2>
+            <p>{filtered.length} total slots</p>
+          </div>
+          <div className="table-controls">
+            <label className="table-search">
+              <Search size={16} />
+              <input
+                value={query}
+                onChange={(e) => {
+                  setQuery(e.target.value);
+                  setCurrentPage(1);
+                }}
+                placeholder="Search slots"
+              />
+            </label>
+            <input
+              className="slot-date-filter"
+              type="date"
+              value={date}
+              onChange={(e) => {
+                setDate(e.target.value);
+                setCurrentPage(1);
+              }}
+            />
+            <select
+              className="booking-filter"
+              value={status}
+              onChange={(e) => {
+                setStatus(e.target.value);
+                setCurrentPage(1);
+              }}
+            >
+              <option value="ALL">All statuses</option>
+              <option value="AVAILABLE">Available</option>
+              <option value="BOOKED">Booked</option>
+              <option value="BLOCKED">Blocked</option>
+            </select>
+          </div>
+        </div>
+        <div className="table-scroll">
+          <table className="slots-table">
+            <thead>
+              <tr>
+                <th className="sn-col">SN</th>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Price</th>
+                <th>Status</th>
+                <th>Created at</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {visible.length ? (
+                visible.map((slot, index) => (
+                  <tr key={slot.id}>
+                    <td className="sn-col">
+                      {(currentPage - 1) * rows + index + 1}
+                    </td>
+                    <td>
+                      <span className="slot-date">
+                        <CalendarDays size={14} />
+                        {formatDate(slot.date)}
+                      </span>
+                    </td>
+                    <td>
+                      <span className="slot-time">
+                        <Clock3 size={14} />
+                        {formatTime(slot.start_time)} –{" "}
+                        {formatTime(slot.end_time)}
+                      </span>
+                    </td>
+                    <td>
+                      <strong className="slot-price">
+                        NPR {Number(slot.price).toLocaleString()}
+                      </strong>
+                    </td>
+                    <td>
+                      <span
+                        className={`slot-status ${slot.status.toLowerCase()}`}
+                      >
+                        {labelStatus(slot.status)}
+                      </span>
+                    </td>
+                    <td>
+                      <span className="created-date">
+                        {formatDateTime(slot.created_at)}
+                      </span>
+                    </td>
+                    <td>
+                      <div className="slot-row-actions">
+                        <button
+                          onClick={() => {
+                            setSelected(slot);
+                            setAction("view");
+                          }}
+                          title="View slot"
+                        >
+                          <Eye size={14} />
+                        </button>
+                        <button
+                          onClick={() => openEdit(slot)}
+                          title="Update slot"
+                        >
+                          <Pencil size={14} />
+                        </button>
+                        <button
+                          className="slot-delete-action"
+                          onClick={() => {
+                            setSelected(slot);
+                            setAction("delete");
+                          }}
+                          title="Delete slot"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={7} className="table-empty">
+                    No slots found.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+        <div className="table-footer">
+          <label className="booking-rows-select">
+            Rows per page
+            <select
+              value={rows}
+              onChange={(e) => setRows(Number(e.target.value))}
+            >
+              <option value={10}>10</option>
+              <option value={20}>20</option>
+              <option value={50}>50</option>
+            </select>
+          </label>
+          <span className="page-count">
+            {filtered.length ? (currentPage - 1) * rows + 1 : 0}–
+            {Math.min(currentPage * rows, filtered.length)} of {filtered.length}
+          </span>
+          <div className="pagination">
+            <button
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage((current) => current - 1)}
+            >
+              <ChevronLeft size={16} />
+            </button>
+            <span className="slots-page-label">
+              Page {currentPage} of {totalPages}
+            </span>
+            <button
+              disabled={currentPage >= totalPages}
+              onClick={() => setCurrentPage((current) => current + 1)}
+            >
+              <ChevronRight size={16} />
+            </button>
+          </div>
+        </div>
+      </section>
+      {action && selected && (
+        <div
+          className="modal-backdrop"
+          onClick={() => !saving && !deleting && setAction(null)}
+        >
+          {action === "view" ? (
+            <div
+              className="contact-modal booking-modal"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="modal-header">
+                <h2>Slot details</h2>
+                <button className="modal-close" onClick={() => setAction(null)}>
+                  <X size={18} />
+                </button>
+              </div>
+              <div className="modal-content">
+                <p>
+                  <b>Date:</b> {formatDate(selected.date)}
+                </p>
+                <p>
+                  <b>Time:</b> {formatTime(selected.start_time)} –{" "}
+                  {formatTime(selected.end_time)}
+                </p>
+                <p>
+                  <b>Price:</b> NPR {Number(selected.price).toLocaleString()}
+                </p>
+                <p>
+                  <b>Status:</b> {labelStatus(selected.status)}
+                </p>
+              </div>
+            </div>
+          ) : action === "edit" ? (
+            <form
+              className="add-slot-dialog"
+              onClick={(e) => e.stopPropagation()}
+              onSubmit={saveEdit}
+            >
+              <header>
+                <div>
+                  <p>Slot management</p>
+                  <h2>Update slot</h2>
+                </div>
+                <button
+                  type="button"
+                  className="dialog-close"
+                  onClick={() => setAction(null)}
+                  disabled={saving}
+                >
+                  ×
+                </button>
+              </header>
+              <div className="add-slot-fields">
+                <label>
+                  Date
+                  <input
+                    type="date"
+                    value={editForm.date}
+                    onChange={(e) =>
+                      setEditForm({ ...editForm, date: e.target.value })
+                    }
+                    required
+                  />
+                </label>
+                <label>
+                  Status
+                  <select
+                    value={editForm.status}
+                    onChange={(e) =>
+                      setEditForm({ ...editForm, status: e.target.value })
+                    }
+                  >
+                    <option value="AVAILABLE">Available</option>
+                    <option value="BOOKED">Booked</option>
+                    <option value="BLOCKED">Blocked</option>
+                  </select>
+                </label>
+                <label>
+                  Start time
+                  <input
+                    type="time"
+                    value={editForm.start_time}
+                    onChange={(e) =>
+                      setEditForm({ ...editForm, start_time: e.target.value })
+                    }
+                    required
+                  />
+                </label>
+                <label>
+                  End time
+                  <input
+                    type="time"
+                    value={editForm.end_time}
+                    onChange={(e) =>
+                      setEditForm({ ...editForm, end_time: e.target.value })
+                    }
+                    required
+                  />
+                </label>
+                <label>
+                  Price
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={editForm.price}
+                    onChange={(e) =>
+                      setEditForm({ ...editForm, price: e.target.value })
+                    }
+                    required
+                  />
+                </label>
+              </div>
+              <footer>
+                <button
+                  type="button"
+                  className="secondary-button"
+                  onClick={() => setAction(null)}
+                  disabled={saving}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="primary-button"
+                  disabled={saving}
+                >
+                  {saving ? "Updating..." : "Update slot"}
+                </button>
+              </footer>
+            </form>
+          ) : (
+            <div
+              className="confirmation-modal"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="confirmation-icon confirm-danger">
+                <Trash2 size={22} />
+              </div>
+              <h2>Delete this slot?</h2>
+              <p>This action cannot be undone.</p>
+              <div className="confirmation-actions">
+                <button
+                  className="secondary-button"
+                  onClick={() => setAction(null)}
+                  disabled={deleting}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="danger-button"
+                  onClick={() => void remove()}
+                  disabled={deleting}
+                >
+                  {deleting ? "Deleting..." : "Delete slot"}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
 }
-function formatDate(value: string) { return new Date(`${value}T00:00:00`).toLocaleDateString([], { year: 'numeric', month: 'short', day: 'numeric' }) }
-function formatTime(value: string) { const [hour, minute] = value.split(':').map(Number); return `${hour % 12 || 12}:${String(minute).padStart(2, '0')} ${hour >= 12 ? 'PM' : 'AM'}` }
-function formatDateTime(value: string) { return new Date(value).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' }) }
-function labelStatus(value: string) { return value[0] + value.slice(1).toLowerCase() }
+function formatDate(value: string) {
+  return new Date(`${value}T00:00:00`).toLocaleDateString([], {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+}
+function formatTime(value: string) {
+  const [hour, minute] = value.split(":").map(Number);
+  return `${hour % 12 || 12}:${String(minute).padStart(2, "0")} ${hour >= 12 ? "PM" : "AM"}`;
+}
+function formatDateTime(value: string) {
+  return new Date(value).toLocaleString([], {
+    dateStyle: "medium",
+    timeStyle: "short",
+  });
+}
+function labelStatus(value: string) {
+  return value[0] + value.slice(1).toLowerCase();
+}

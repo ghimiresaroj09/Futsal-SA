@@ -1,2 +1,36 @@
 /* Keep the list view aligned with the shared Contact Us table treatment. */
-.slots-page .slots-table{min-width:1030px}.slots-page .slots-table th,.slots-page .slots-table td{padding:14px 13px}.slots-page .slots-table .slot-row-actions button{background:none;color:#a1a3b3;padding:5px;border:0;border-radius:5px;width:auto;height:auto}.slots-page .slots-table .slot-row-actions button:hover{background:#f1efff;color:#7569e8;border:0}.slots-page .slots-table .slot-row-actions .slot-delete-action{color:#a1a3b3}.slots-page .slots-table .slot-row-actions .slot-delete-action:hover{color:#d86572;background:#fff0f1}.slots-page .slots-table .slot-row-actions{justify-content:center}.slots-page .slots-table td:last-child{width:88px;text-align:center}
+.slots-page .slots-table {
+  min-width: 1030px;
+}
+.slots-page .slots-table th,
+.slots-page .slots-table td {
+  padding: 14px 13px;
+}
+.slots-page .slots-table .slot-row-actions button {
+  background: none;
+  color: #a1a3b3;
+  padding: 5px;
+  border: 0;
+  border-radius: 5px;
+  width: auto;
+  height: auto;
+}
+.slots-page .slots-table .slot-row-actions button:hover {
+  background: #f1efff;
+  color: #7569e8;
+  border: 0;
+}
+.slots-page .slots-table .slot-row-actions .slot-delete-action {
+  color: #a1a3b3;
+}
+.slots-page .slots-table .slot-row-actions .slot-delete-action:hover {
+  color: #d86572;
+  background: #fff0f1;
+}
+.slots-page .slots-table .slot-row-actions {
+  justify-content: center;
+}
+.slots-page .slots-table td:last-child {
+  width: 88px;
+  text-align: center;
+}
