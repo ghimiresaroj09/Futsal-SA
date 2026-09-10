@@ -19,6 +19,7 @@ import { ChangePasswordPage } from "./pages/ChangePasswordPage";
 import { ContactUsPage } from "./pages/ContactUsPage";
 import { UsersPage } from "./pages/UsersPage";
 import { BookingsPage } from "./pages/BookingsPage";
+import { BookingsCalendarPage } from "./pages/BookingsCalendarPage";
 import { NotificationsPage } from "./pages/NotificationsPage";
 import { UpdateProfilePage } from "./pages/UpdateProfilePage";
 import { ClosurePage } from "./pages/ClosurePage";
@@ -61,6 +62,7 @@ export default function App() {
               <Route path="/" element={<DashboardPage />} />
               <Route path="/users" element={<UsersPage />} />
               <Route path="/bookings" element={<BookingsPage />} />
+              <Route path="/bookings/calendar" element={<BookingsCalendarPage />} />
               <Route path="/bookings/:id" element={<BookingsPage />} />
               <Route path="/notifications" element={<NotificationsPage />} />
               <Route

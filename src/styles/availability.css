@@ -148,6 +148,9 @@
 .blocked-dot {
   background: #d86572;
 }
+.reserved-dot {
+  background: #e67e22;
+}
 .availability-slots {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -210,6 +213,9 @@
 .availability-slot.blocked {
   border-color: #f2d9dc;
 }
+.availability-slot.reserved {
+  border-color: #ffeacc;
+}
 .availability-slot.booked .availability-slot-icon {
   background: #f0efff;
   color: #7569e8;
@@ -217,6 +223,10 @@
 .availability-slot.blocked .availability-slot-icon {
   background: #fff0f1;
   color: #d86572;
+}
+.availability-slot.reserved .availability-slot-icon {
+  background: #fff4e6;
+  color: #e67e22;
 }
 @media (max-width: 800px) {
   .availability-slots {
@@ -245,4 +255,128 @@
     padding-left: 16px;
     padding-right: 16px;
   }
+}
+
+/* Booking Calendar Specific Styles */
+.booking-slot {
+  min-height: 110px;
+}
+.booking-customer-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin: 6px 0;
+}
+.customer-name {
+  font-size: 11px;
+  color: #55576c;
+  font-weight: 600;
+}
+.booking-contact-mini {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  color: #898b9d;
+}
+.booking-amount {
+  font-size: 11px;
+  color: #7569e8;
+  font-weight: 700;
+  margin-top: 4px;
+}
+.booking-slot-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+.view-booking-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 10px;
+  border: 1px solid #e2e1f7;
+  border-radius: 6px;
+  background: #fff;
+  color: #7165dc;
+  font-size: 10px;
+  font-weight: 600;
+  transition: all 0.15s;
+}
+.view-booking-btn:hover {
+  background: #f4f2ff;
+  border-color: #d0cef4;
+}
+
+/* Status dots for bookings */
+.confirmed-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #4caf50;
+}
+.pending-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #ff9800;
+}
+.cancelled-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #f44336;
+}
+.completed-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #2196f3;
+}
+.rescheduled-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #9c27b0;
+}
+
+/* Booking slot status colors */
+.booking-slot.confirmed {
+  border-left-color: #4caf50;
+}
+.booking-slot.pending {
+  border-left-color: #ff9800;
+}
+.booking-slot.cancelled {
+  border-left-color: #f44336;
+  opacity: 0.7;
+}
+.booking-slot.completed {
+  border-left-color: #2196f3;
+}
+.booking-slot.rescheduled {
+  border-left-color: #9c27b0;
+}
+
+/* Booking status label colors in cards */
+.slot-status.confirmed {
+  background: #eaf9f2;
+  color: #2da978;
+}
+.slot-status.pending {
+  background: #fff4e6;
+  color: #e67e22;
+}
+.slot-status.cancelled {
+  background: #ffebee;
+  color: #d32f2f;
+}
+.slot-status.completed {
+  background: #e3f2fd;
+  color: #1976d2;
+}
+.slot-status.rescheduled {
+  background: #f3e5f5;
+  color: #7b1fa2;
 }

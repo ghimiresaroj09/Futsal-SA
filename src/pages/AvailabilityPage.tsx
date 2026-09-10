@@ -264,6 +264,11 @@ export function AvailabilityPage() {
               <i className="blocked-dot" />
               Blocked
             </span>
+
+            <span>
+              <i className="reserved-dot" />
+              Reserved
+            </span>
           </div>
         </div>
 
@@ -441,5 +446,9 @@ function labelStatus(value: string) {
     ? "Available"
     : value === "BOOKED"
       ? "Booked"
-      : "Blocked";
+      : value === "BLOCKED"
+        ? "Blocked"
+        : value === "RESERVED"
+          ? "Reserved"
+          : value;
 }

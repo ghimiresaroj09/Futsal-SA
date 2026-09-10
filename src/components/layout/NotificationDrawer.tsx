@@ -41,7 +41,7 @@ export function NotificationDrawer({
     const base = import.meta.env.DEV
       ? "/backend"
       : import.meta.env.VITE_API_BASE_URL || "";
-    authFetch(`${base}/api/v1/admin/notifications/`)
+    authFetch(`${base}/api/v1/admin/notifications/?page=1&page_size=10`)
       .then(async (response) => {
         const body = await response.json().catch(() => ({}));
         if (!response.ok || !body.success)

@@ -591,13 +591,22 @@ export function BookingsPage() {
             View and manage bookings made by your customers.
           </p>
         </div>
-        <button
-          className="primary-button"
-          onClick={() => setAddBookingOpen(true)}
-        >
-          <Plus size={16} />
-          Add booking
-        </button>
+        <div style={{ display: "flex", gap: "10px" }}>
+          <button
+            className="secondary-button"
+            onClick={() => navigate("/bookings/calendar")}
+          >
+            <CalendarDays size={16} />
+            View calendar wise
+          </button>
+          <button
+            className="primary-button"
+            onClick={() => setAddBookingOpen(true)}
+          >
+            <Plus size={16} />
+            Add booking
+          </button>
+        </div>
       </div>
       <section className="table-card">
         <div className="table-toolbar booking-toolbar">

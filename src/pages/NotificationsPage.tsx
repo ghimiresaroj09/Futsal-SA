@@ -1,4 +1,11 @@
-import { Bell, Check, CheckCheck, CircleAlert } from "lucide-react";
+import {
+  Bell,
+  Check,
+  CheckCheck,
+  ChevronLeft,
+  ChevronRight,
+  CircleAlert,
+} from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "../components/ui/Toast";
@@ -19,7 +26,13 @@ type Notification = {
 type Response = {
   success: boolean;
   message: string;
-  data: { unread_count: number; results: Notification[] };
+  data: {
+    unread_count: number;
+    results: Notification[];
+    count: number;
+    next: string | null;
+    previous: string | null;
+  };
 };
 
 export function NotificationsPage() {
@@ -29,13 +42,21 @@ export function NotificationsPage() {
   const [filter, setFilter] = useState<"ALL" | "UNREAD" | "READ">("ALL");
   const [loading, setLoading] = useState(true);
   const [marking, setMarking] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const [hasNext, setHasNext] = useState(false);
+  const [hasPrevious, setHasPrevious] = useState(false);
+  const pageSize = 20;
 
   useEffect(() => {
     let active = true;
+    setLoading(true);
     const base = import.meta.env.DEV
       ? "/backend"
       : import.meta.env.VITE_API_BASE_URL || "";
-    authFetch(`${base}/api/v1/admin/notifications/`)
+    authFetch(
+      `${base}/api/v1/admin/notifications/?page=${currentPage}&page_size=${pageSize}`,
+    )
       .then(async (response) => {
         const body = await response.json().catch(() => ({}));
         if (!response.ok || !body.success)
@@ -43,7 +64,12 @@ export function NotificationsPage() {
         return body as Response;
       })
       .then((response) => {
-        if (active) setItems(response.data.results);
+        if (active) {
+          setItems(response.data.results);
+          setTotalCount(response.data.count);
+          setHasNext(response.data.next !== null);
+          setHasPrevious(response.data.previous !== null);
+        }
       })
       .catch((error: Error) => {
         if (active) showToast(error.message, "error");
@@ -54,7 +80,7 @@ export function NotificationsPage() {
     return () => {
       active = false;
     };
-  }, [showToast]);
+  }, [showToast, currentPage, pageSize]);
 
   const visible = useMemo(
     () =>
@@ -66,6 +92,9 @@ export function NotificationsPage() {
     [items, filter],
   );
   const unread = items.filter((item) => !item.is_read).length;
+  const totalPages = Math.ceil(totalCount / pageSize);
+  const startItem = (currentPage - 1) * pageSize + 1;
+  const endItem = Math.min(currentPage * pageSize, totalCount);
   const markRead = async (id: string) => {
     setMarking(id);
     try {
@@ -245,6 +274,32 @@ export function NotificationsPage() {
             </>
           )}
         </div>
+        {totalCount > pageSize && (
+          <div className="table-footer">
+            <span className="pagination-info">
+              {totalCount ? startItem : 0}–{endItem} of {totalCount}
+            </span>
+            <div className="pagination">
+              <button
+                disabled={!hasPrevious || loading}
+                onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+              >
+                <ChevronLeft size={16} />
+              </button>
+              <span>
+                Page {currentPage} of {totalPages}
+              </span>
+              <button
+                disabled={!hasNext || loading}
+                onClick={() =>
+                  setCurrentPage((prev) => Math.min(totalPages, prev + 1))
+                }
+              >
+                <ChevronRight size={16} />
+              </button>
+            </div>
+          </div>
+        )}
       </section>
     </div>
   );

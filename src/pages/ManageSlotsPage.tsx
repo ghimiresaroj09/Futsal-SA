@@ -101,7 +101,7 @@ export function ManageSlotsPage() {
     const dialog = document.createElement("dialog");
     dialog.className = "add-slot-dialog";
     dialog.innerHTML =
-      '<form method="dialog"><header><div><p>Slot management</p><h2>Add slot</h2></div><button type="button" class="dialog-close">×</button></header><div class="add-slot-fields"><label>Date<input name="date" type="date" required></label><label>Status<select name="status"><option value="AVAILABLE">Available</option><option value="BOOKED">Booked</option><option value="BLOCKED">Blocked</option></select></label><label>Start time<input name="start" type="time" required></label><label>End time<input name="end" type="time" required></label><label>Price<input name="price" type="number" min="0" step="0.01" value="2000.00" required></label></div><footer><button type="button" class="secondary-button">Cancel</button><button type="submit" value="default" class="primary-button">Add slot</button></footer></form>';
+      '<form method="dialog"><header><div><p>Slot management</p><h2>Add slot</h2></div><button type="button" class="dialog-close">×</button></header><div class="add-slot-fields"><label>Date<input name="date" type="date" required></label><label>Status<select name="status"><option value="AVAILABLE">Available</option><option value="BOOKED">Booked</option><option value="BLOCKED">Blocked</option><option value="RESERVED">Reserved</option></select></label><label>Start time<input name="start" type="time" required></label><label>End time<input name="end" type="time" required></label><label>Price<input name="price" type="number" min="0" step="0.01" value="2000.00" required></label></div><footer><button type="button" class="secondary-button">Cancel</button><button type="submit" value="default" class="primary-button">Add slot</button></footer></form>';
     button.onclick = () => {
       const form = dialog.querySelector("form") as HTMLFormElement;
       form.reset();
@@ -356,6 +356,7 @@ export function ManageSlotsPage() {
               <option value="AVAILABLE">Available</option>
               <option value="BOOKED">Booked</option>
               <option value="BLOCKED">Blocked</option>
+              <option value="RESERVED">Reserved</option>
             </select>
           </div>
         </div>
@@ -560,6 +561,7 @@ export function ManageSlotsPage() {
                     <option value="AVAILABLE">Available</option>
                     <option value="BOOKED">Booked</option>
                     <option value="BLOCKED">Blocked</option>
+                    <option value="RESERVED">Reserved</option>
                   </select>
                 </label>
                 <label>
@@ -667,5 +669,6 @@ function formatDateTime(value: string) {
   });
 }
 function labelStatus(value: string) {
-  return value[0] + value.slice(1).toLowerCase();
+  const status = value[0] + value.slice(1).toLowerCase();
+  return `Slot ${status}`;
 }
