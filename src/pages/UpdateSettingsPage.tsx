@@ -18,6 +18,10 @@ type SettingsForm = {
   opening_time: string;
   closing_time: string;
   status: string;
+  facebook: string;
+  instagram: string;
+  twitter: string;
+  tiktok: string;
 };
 const emptyForm: SettingsForm = {
   name: "",
@@ -31,6 +35,10 @@ const emptyForm: SettingsForm = {
   opening_time: "",
   closing_time: "",
   status: "ACTIVE",
+  facebook: "",
+  instagram: "",
+  twitter: "",
+  tiktok: "",
 };
 
 export function UpdateSettingsPage() {
@@ -214,6 +222,38 @@ export function UpdateSettingsPage() {
             </label>
           </div>
         </div>
+        <div className="form-section">
+          <div className="section-title">
+            <h2>Social media</h2>
+            <p>Add your social media profile links.</p>
+          </div>
+          <div className="form-grid">
+            <Field
+              label="Facebook"
+              value={form.facebook}
+              onChange={(value) => update("facebook", value)}
+              type="url"
+            />
+            <Field
+              label="Instagram"
+              value={form.instagram}
+              onChange={(value) => update("instagram", value)}
+              type="url"
+            />
+            <Field
+              label="Twitter"
+              value={form.twitter}
+              onChange={(value) => update("twitter", value)}
+              type="url"
+            />
+            <Field
+              label="TikTok"
+              value={form.tiktok}
+              onChange={(value) => update("tiktok", value)}
+              type="url"
+            />
+          </div>
+        </div>
         <div className="form-actions">
           <button
             type="button"
@@ -280,6 +320,10 @@ function toForm(settings: FacilitySettings): SettingsForm {
     opening_time: settings.opening_time.slice(0, 5),
     closing_time: settings.closing_time.slice(0, 5),
     status: settings.status,
+    facebook: settings.facebook || "",
+    instagram: settings.instagram || "",
+    twitter: settings.twitter || "",
+    tiktok: settings.tiktok || "",
   };
 }
 function toApiTime(value: string) {

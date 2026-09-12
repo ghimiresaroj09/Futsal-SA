@@ -27,6 +27,11 @@ import { ManageSlotsPage } from "./pages/ManageSlotsPage";
 import { BulkSlotsPage } from "./pages/BulkSlotsPage";
 import { AvailabilityPage } from "./pages/AvailabilityPage";
 import { AnalyticsPage } from "./pages/AnalyticsPage";
+import { CMSHomePage } from "./pages/CMSHomePage";
+import { CMSGalleryPage } from "./pages/CMSGalleryPage";
+import { CMSTestimonialsPage } from "./pages/CMSTestimonialsPage";
+import { CMSBookingsPage } from "./pages/CMSBookingsPage";
+import { CMSAboutUsPage } from "./pages/CMSAboutUsPage";
 import { ToastProvider } from "./components/ui/Toast";
 
 function ProtectedRoute() {
@@ -74,6 +79,20 @@ export default function App() {
               <Route path="/bulk-slots" element={<BulkSlotsPage />} />
               <Route path="/closure" element={<ClosurePage />} />
               <Route path="/analytics" element={<AnalyticsPage />} />
+              <Route path="/cms/home" element={<CMSHomePage />} />
+              <Route
+                path="/cms/booking"
+                element={<CMSBookingsPage />}
+              />
+              <Route path="/cms/gallery" element={<CMSGalleryPage />} />
+              <Route
+                path="/cms/about-us"
+                element={<CMSAboutUsPage />}
+              />
+              <Route
+                path="/cms/testimonials"
+                element={<CMSTestimonialsPage />}
+              />
               <Route path="/change-password" element={<ChangePasswordPage />} />
               <Route path="/contact" element={<ContactUsPage />} />
               <Route path="/settings" element={<SettingsPage />} />

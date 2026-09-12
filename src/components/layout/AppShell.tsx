@@ -5,6 +5,7 @@ import {
   CalendarDays,
   ChevronDown,
   Clock3,
+  FileText,
   KeyRound,
   LayoutDashboard,
   LogOut,
@@ -33,6 +34,7 @@ const navigation = [
   { label: "Bookings", to: "/bookings", icon: CalendarDays },
   { label: "Slot Management", to: "/slot-management", icon: Clock3 },
   { label: "Analytics", to: "/analytics", icon: BarChart3 },
+  { label: "CMS", to: "/cms", icon: FileText },
   { label: "Change Password", to: "/change-password", icon: KeyRound },
   { label: "Contact Us", to: "/contact", icon: MessageCircle },
   { label: "Settings", to: "/settings", icon: Settings },
@@ -44,6 +46,7 @@ export function AppShell() {
   const [profileOpen, setProfileOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [slotMenuOpen, setSlotMenuOpen] = useState(true);
+  const [cmsMenuOpen, setCmsMenuOpen] = useState(true);
   const [logoutConfirmationOpen, setLogoutConfirmationOpen] = useState(false);
   const [logoutPending, setLogoutPending] = useState(false);
   const logoutInProgress = useRef(false);
@@ -287,6 +290,61 @@ export function AppShell() {
                       className={({ isActive }) => (isActive ? "active" : "")}
                     >
                       Closure
+                    </NavLink>
+                  </div>
+                )}
+              </div>
+            ) : label === "CMS" ? (
+              <div key={to} className="slot-nav-group">
+                <button
+                  className="nav-item slot-nav-toggle"
+                  onClick={() => setCmsMenuOpen((open) => !open)}
+                  aria-expanded={cmsMenuOpen}
+                  title={sidebarCollapsed ? label : undefined}
+                >
+                  <Icon size={18} />
+                  <span>{label}</span>
+                  <ChevronDown
+                    size={15}
+                    className={cmsMenuOpen ? "slot-chevron-open" : ""}
+                  />
+                </button>
+                {cmsMenuOpen && (
+                  <div className="slot-subnav">
+                    <NavLink
+                      to="/cms/home"
+                      onClick={() => setMobileOpen(false)}
+                      className={({ isActive }) => (isActive ? "active" : "")}
+                    >
+                      Home
+                    </NavLink>
+                    <NavLink
+                      to="/cms/booking"
+                      onClick={() => setMobileOpen(false)}
+                      className={({ isActive }) => (isActive ? "active" : "")}
+                    >
+                      Booking
+                    </NavLink>
+                    <NavLink
+                      to="/cms/gallery"
+                      onClick={() => setMobileOpen(false)}
+                      className={({ isActive }) => (isActive ? "active" : "")}
+                    >
+                      Gallery
+                    </NavLink>
+                    <NavLink
+                      to="/cms/about-us"
+                      onClick={() => setMobileOpen(false)}
+                      className={({ isActive }) => (isActive ? "active" : "")}
+                    >
+                      About Us
+                    </NavLink>
+                    <NavLink
+                      to="/cms/testimonials"
+                      onClick={() => setMobileOpen(false)}
+                      className={({ isActive }) => (isActive ? "active" : "")}
+                    >
+                      Testimonials
                     </NavLink>
                   </div>
                 )}

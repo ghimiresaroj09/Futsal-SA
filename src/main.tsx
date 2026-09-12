@@ -1,5 +1,6 @@
 import { createRoot } from 'react-dom/client'
 import App from './App'
+import '@fortawesome/fontawesome-free/css/all.css'
 import './styles/global.css'
 import './styles/dashboard.css'
 import './styles/profile.css'
@@ -20,5 +21,6 @@ import './styles/manage-slots-table.css'
 import './styles/bulk-slots.css'
 import './styles/availability.css'
 import './styles/analytics.css'
+import './styles/cms.css'
 
 createRoot(document.getElementById('root')!).render(<App />)
