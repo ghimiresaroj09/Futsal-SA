@@ -680,8 +680,7 @@ export function CMSAboutUsPage() {
                 <label className="field">
                   <span>Years in Game</span>
                   <input
-                    type="number"
-                    min="0"
+                    type="text"
                     value={heroData.years_in_game}
                     onChange={(e) =>
                       setHeroData({
@@ -696,8 +695,7 @@ export function CMSAboutUsPage() {
                 <label className="field">
                   <span>Matches Hosted</span>
                   <input
-                    type="number"
-                    min="0"
+                    type="text"
                     value={heroData.matches_hosted}
                     onChange={(e) =>
                       setHeroData({
@@ -714,8 +712,7 @@ export function CMSAboutUsPage() {
                 <label className="field">
                   <span>Tournaments Run</span>
                   <input
-                    type="number"
-                    min="0"
+                    type="text"
                     value={heroData.tournaments_run}
                     onChange={(e) =>
                       setHeroData({
@@ -730,8 +727,7 @@ export function CMSAboutUsPage() {
                 <label className="field">
                   <span>Players in Community</span>
                   <input
-                    type="number"
-                    min="0"
+                    type="text"
                     value={heroData.players_in_community}
                     onChange={(e) =>
                       setHeroData({
