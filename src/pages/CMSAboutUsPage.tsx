@@ -422,7 +422,11 @@ export function CMSAboutUsPage() {
         // Add journey items with images
         storyData.journey.forEach((item, index) => {
           if (item.image) {
+            // New file upload
             formData.append(`journey[${index}][image]`, item.image);
+          } else if (item.imagePreview && !item.imagePreview.startsWith('blob:')) {
+            // Existing URL - send as string to preserve it
+            formData.append(`journey[${index}][image]`, item.imagePreview);
           }
           formData.append(`journey[${index}][year]`, item.year);
           formData.append(`journey[${index}][title]`, item.title);
@@ -507,7 +511,11 @@ export function CMSAboutUsPage() {
           formData.append(`team[${index}][name]`, member.name);
           formData.append(`team[${index}][role]`, member.role);
           if (member.image) {
+            // New file upload
             formData.append(`team[${index}][image]`, member.image);
+          } else if (member.imagePreview && !member.imagePreview.startsWith('blob:')) {
+            // Existing URL - send as string to preserve it
+            formData.append(`team[${index}][image]`, member.imagePreview);
           }
         });
         
