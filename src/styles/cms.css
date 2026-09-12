@@ -1527,3 +1527,142 @@
 .feature-item .icon-button {
   flex-shrink: 0;
 }
+
+/* Journey Timeline Two-Column Layout */
+.journey-two-column {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.journey-image-column {
+  display: flex;
+  flex-direction: column;
+}
+
+.journey-details-column {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.journey-two-column .image-upload {
+  min-height: 250px;
+}
+
+.journey-two-column .upload-placeholder {
+  min-height: 250px;
+}
+
+.journey-two-column .image-preview {
+  min-height: 250px;
+}
+
+.journey-two-column .image-preview img {
+  min-height: 250px;
+  max-height: 350px;
+  object-fit: cover;
+}
+
+@media (max-width: 768px) {
+  .journey-two-column {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .journey-two-column .image-upload {
+    min-height: 200px;
+  }
+
+  .journey-two-column .upload-placeholder {
+    min-height: 200px;
+  }
+
+  .journey-two-column .image-preview {
+    min-height: 200px;
+  }
+
+  .journey-two-column .image-preview img {
+    min-height: 200px;
+    max-height: 250px;
+  }
+}
+
+/* Team Members Two-Column Layout */
+.team-two-column {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.team-image-column {
+  display: flex;
+  flex-direction: column;
+}
+
+.team-details-column {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.team-two-column .image-upload {
+  min-height: 150px;
+}
+
+.team-two-column .upload-placeholder {
+  min-height: 150px;
+  padding: 32px;
+}
+
+.team-two-column .image-preview {
+  min-height: 150px;
+}
+
+.team-two-column .image-preview img {
+  min-height: 150px;
+  max-height: 200px;
+  object-fit: cover;
+}
+
+@media (max-width: 768px) {
+  .team-two-column {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .team-two-column .image-upload {
+    min-height: 140px;
+  }
+
+  .team-two-column .upload-placeholder {
+    min-height: 140px;
+    padding: 28px;
+  }
+
+  .team-two-column .image-preview {
+    min-height: 140px;
+  }
+
+  .team-two-column .image-preview img {
+    min-height: 140px;
+    max-height: 180px;
+  }
+}
+
+/* Drag and Drop States */
+.upload-placeholder.dragging {
+  border-color: #7569e8;
+  background: #f0efff;
+  transform: scale(1.02);
+  box-shadow: 0 4px 12px rgba(117, 105, 232, 0.2);
+}
+
+.upload-hint {
+  font-size: 11px;
+  color: #a0a2b2;
+  font-weight: 400;
+  margin-top: 4px;
+}

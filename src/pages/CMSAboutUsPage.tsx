@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import { Save, Plus, Trash2 } from "lucide-react";
+import { Save, Plus, Trash2, X, Image } from "lucide-react";
 import { useToast } from "../components/ui/Toast";
+import { ImageUpload } from "../components/ui/ImageUpload";
 import { authFetch } from "../lib/api";
 
 type TabType = "hero" | "story" | "community";
@@ -633,20 +634,24 @@ export function CMSAboutUsPage() {
             </div>
 
             <div className="form-section">
-              {heroData.imagePreview && (
-                <div className="image-preview-container">
-                  <img src={heroData.imagePreview} alt="Hero preview" />
-                </div>
-              )}
-
-              <label className="field">
-                <span>Hero Image</span>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleHeroImageSelect}
-                />
-              </label>
+              <ImageUpload
+                label="Hero Background Image"
+                value={heroData.imagePreview}
+                onChange={(file) =>
+                  setHeroData({
+                    ...heroData,
+                    image: file,
+                    imagePreview: URL.createObjectURL(file),
+                  })
+                }
+                onRemove={() =>
+                  setHeroData({
+                    ...heroData,
+                    image: null,
+                    imagePreview: "",
+                  })
+                }
+              />
 
               <label className="field">
                 <span>
@@ -767,20 +772,24 @@ export function CMSAboutUsPage() {
             </div>
 
             <div className="form-section">
-              {storyData.imagePreview && (
-                <div className="image-preview-container">
-                  <img src={storyData.imagePreview} alt="Story preview" />
-                </div>
-              )}
-
-              <label className="field">
-                <span>Story Image</span>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleStoryImageSelect}
-                />
-              </label>
+              <ImageUpload
+                label="Story Background Image"
+                value={storyData.imagePreview}
+                onChange={(file) =>
+                  setStoryData({
+                    ...storyData,
+                    image: file,
+                    imagePreview: URL.createObjectURL(file),
+                  })
+                }
+                onRemove={() =>
+                  setStoryData({
+                    ...storyData,
+                    image: null,
+                    imagePreview: "",
+                  })
+                }
+              />
 
               <label className="field">
                 <span>
@@ -846,61 +855,69 @@ export function CMSAboutUsPage() {
                         </button>
                       </div>
 
-                      <div className="info-item-fields">
-                        {item.imagePreview && (
-                          <div className="image-preview-container" style={{ height: "180px" }}>
-                            <img src={item.imagePreview} alt={item.title} />
-                          </div>
-                        )}
-
-                        <label className="field">
-                          <span>Milestone Image</span>
-                          <input
-                            type="file"
-                            accept="image/*"
-                            onChange={(e) => handleJourneyImageSelect(index, e)}
+                      <div className="info-item-fields journey-two-column">
+                        {/* Left Column - Image */}
+                        <div className="journey-image-column">
+                          <ImageUpload
+                            label="Milestone Image"
+                            value={item.imagePreview}
+                            onChange={(file) => {
+                              const newJourney = [...storyData.journey];
+                              newJourney[index].image = file;
+                              newJourney[index].imagePreview = URL.createObjectURL(file);
+                              setStoryData({ ...storyData, journey: newJourney });
+                            }}
+                            onRemove={() => {
+                              const newJourney = [...storyData.journey];
+                              newJourney[index].image = null;
+                              newJourney[index].imagePreview = "";
+                              setStoryData({ ...storyData, journey: newJourney });
+                            }}
                           />
-                        </label>
+                        </div>
 
-                        <label className="field">
-                          <span>Year</span>
-                          <input
-                            type="text"
-                            value={item.year}
-                            onChange={(e) =>
-                              handleJourneyChange(index, "year", e.target.value)
-                            }
-                            placeholder="e.g., 2019"
-                          />
-                        </label>
+                        {/* Right Column - Details */}
+                        <div className="journey-details-column">
+                          <label className="field">
+                            <span>Year</span>
+                            <input
+                              type="text"
+                              value={item.year}
+                              onChange={(e) =>
+                                handleJourneyChange(index, "year", e.target.value)
+                              }
+                              placeholder="e.g., 2019"
+                            />
+                          </label>
 
-                        <label className="field">
-                          <span>Title</span>
-                          <input
-                            type="text"
-                            value={item.title}
-                            onChange={(e) =>
-                              handleJourneyChange(index, "title", e.target.value)
-                            }
-                            placeholder="e.g., Foundation"
-                          />
-                        </label>
+                          <label className="field">
+                            <span>Title</span>
+                            <input
+                              type="text"
+                              value={item.title}
+                              onChange={(e) =>
+                                handleJourneyChange(index, "title", e.target.value)
+                              }
+                              placeholder="e.g., Foundation"
+                            />
+                          </label>
 
-                        <label className="field">
-                          <span>Description</span>
-                          <textarea
-                            rows={2}
-                            value={item.description}
-                            onChange={(e) =>
-                              handleJourneyChange(
-                                index,
-                                "description",
-                                e.target.value
-                              )
-                            }
-                            placeholder="Brief description..."
-                          />
-                        </label>
+                          <label className="field">
+                            <span>Description</span>
+                            <textarea
+                              rows={3}
+                              value={item.description}
+                              onChange={(e) =>
+                                handleJourneyChange(
+                                  index,
+                                  "description",
+                                  e.target.value
+                                )
+                              }
+                              placeholder="Brief description..."
+                            />
+                          </label>
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -939,20 +956,24 @@ export function CMSAboutUsPage() {
             </div>
 
             <div className="form-section">
-              {communityData.imagePreview && (
-                <div className="image-preview-container">
-                  <img src={communityData.imagePreview} alt="Community preview" />
-                </div>
-              )}
-
-              <label className="field">
-                <span>Community Image</span>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleCommunityImageSelect}
-                />
-              </label>
+              <ImageUpload
+                label="Community Background Image"
+                value={communityData.imagePreview}
+                onChange={(file) =>
+                  setCommunityData({
+                    ...communityData,
+                    image: file,
+                    imagePreview: URL.createObjectURL(file),
+                  })
+                }
+                onRemove={() =>
+                  setCommunityData({
+                    ...communityData,
+                    image: null,
+                    imagePreview: "",
+                  })
+                }
+              />
 
               <label className="field">
                 <span>
@@ -1071,45 +1092,53 @@ export function CMSAboutUsPage() {
                         </button>
                       </div>
 
-                      <div className="info-item-fields">
-                        {member.imagePreview && (
-                          <div className="image-preview-container" style={{ height: "150px" }}>
-                            <img src={member.imagePreview} alt={member.name} />
-                          </div>
-                        )}
-
-                        <label className="field">
-                          <span>Member Image</span>
-                          <input
-                            type="file"
-                            accept="image/*"
-                            onChange={(e) => handleTeamMemberImageSelect(index, e)}
+                      <div className="info-item-fields team-two-column">
+                        {/* Left Column - Image */}
+                        <div className="team-image-column">
+                          <ImageUpload
+                            label="Member Image"
+                            value={member.imagePreview}
+                            onChange={(file) => {
+                              const newTeam = [...communityData.team];
+                              newTeam[index].image = file;
+                              newTeam[index].imagePreview = URL.createObjectURL(file);
+                              setCommunityData({ ...communityData, team: newTeam });
+                            }}
+                            onRemove={() => {
+                              const newTeam = [...communityData.team];
+                              newTeam[index].image = null;
+                              newTeam[index].imagePreview = "";
+                              setCommunityData({ ...communityData, team: newTeam });
+                            }}
                           />
-                        </label>
+                        </div>
 
-                        <label className="field">
-                          <span>Name</span>
-                          <input
-                            type="text"
-                            value={member.name}
-                            onChange={(e) =>
-                              handleTeamMemberChange(index, "name", e.target.value)
-                            }
-                            placeholder="e.g., John Doe"
-                          />
-                        </label>
+                        {/* Right Column - Details */}
+                        <div className="team-details-column">
+                          <label className="field">
+                            <span>Name</span>
+                            <input
+                              type="text"
+                              value={member.name}
+                              onChange={(e) =>
+                                handleTeamMemberChange(index, "name", e.target.value)
+                              }
+                              placeholder="e.g., John Doe"
+                            />
+                          </label>
 
-                        <label className="field">
-                          <span>Role</span>
-                          <input
-                            type="text"
-                            value={member.role}
-                            onChange={(e) =>
-                              handleTeamMemberChange(index, "role", e.target.value)
-                            }
-                            placeholder="e.g., Facility Manager"
-                          />
-                        </label>
+                          <label className="field">
+                            <span>Role</span>
+                            <input
+                              type="text"
+                              value={member.role}
+                              onChange={(e) =>
+                                handleTeamMemberChange(index, "role", e.target.value)
+                              }
+                              placeholder="e.g., Facility Manager"
+                            />
+                          </label>
+                        </div>
                       </div>
                     </div>
                   ))}

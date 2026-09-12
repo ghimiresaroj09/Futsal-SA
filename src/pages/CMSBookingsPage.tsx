@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import { Save, Plus, X, Trash2 } from "lucide-react";
+import { Save, Plus, X, Trash2, Image } from "lucide-react";
 import { useToast } from "../components/ui/Toast";
+import { ImageUpload } from "../components/ui/ImageUpload";
 import { authFetch } from "../lib/api";
 
 type TabType = "hero";
@@ -208,20 +209,24 @@ export function CMSBookingsPage() {
             </div>
 
             <div className="form-section">
-              {heroData.imagePreview && (
-                <div className="image-preview-container">
-                  <img src={heroData.imagePreview} alt="Hero preview" />
-                </div>
-              )}
-
-              <label className="field">
-                <span>Hero Image</span>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageSelect}
-                />
-              </label>
+              <ImageUpload
+                label="Hero Background Image"
+                value={heroData.imagePreview}
+                onChange={(file) =>
+                  setHeroData({
+                    ...heroData,
+                    image: file,
+                    imagePreview: URL.createObjectURL(file),
+                  })
+                }
+                onRemove={() =>
+                  setHeroData({
+                    ...heroData,
+                    image: null,
+                    imagePreview: "",
+                  })
+                }
+              />
 
               <label className="field">
                 <span>

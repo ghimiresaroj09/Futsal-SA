@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Image, Plus, Save, X, Pencil, ChevronLeft, ChevronRight, Eye, Trash2 } from "lucide-react";
 import { useToast } from "../components/ui/Toast";
+import { ImageUpload } from "../components/ui/ImageUpload";
 import { authFetch } from "../lib/api";
 
 type TabType = "hero" | "arena" | "carousel" | "why-us";
@@ -619,39 +620,24 @@ export function CMSHomePage() {
                 />
               </label>
 
-              <label className="field">
-                <span>Hero Background Image</span>
-                <div className="image-upload">
-                  {heroData.imagePreview ? (
-                    <div className="image-preview">
-                      <img src={heroData.imagePreview} alt="Hero preview" />
-                      <button
-                        className="remove-image"
-                        onClick={() =>
-                          setHeroData({
-                            ...heroData,
-                            image: null,
-                            imagePreview: "",
-                          })
-                        }
-                      >
-                        <X size={16} />
-                      </button>
-                    </div>
-                  ) : (
-                    <label className="upload-placeholder">
-                      <Image size={32} />
-                      <span>Click to upload image</span>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleHeroImageChange}
-                        hidden
-                      />
-                    </label>
-                  )}
-                </div>
-              </label>
+              <ImageUpload
+                label="Hero Background Image"
+                value={heroData.imagePreview}
+                onChange={(file) =>
+                  setHeroData({
+                    ...heroData,
+                    image: file,
+                    imagePreview: URL.createObjectURL(file),
+                  })
+                }
+                onRemove={() =>
+                  setHeroData({
+                    ...heroData,
+                    image: null,
+                    imagePreview: "",
+                  })
+                }
+              />
 
               <div className="stats-section">
                 <h3>Statistics Section</h3>
