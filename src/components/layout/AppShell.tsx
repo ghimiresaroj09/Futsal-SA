@@ -346,6 +346,13 @@ export function AppShell() {
                     >
                       Testimonials
                     </NavLink>
+                    <NavLink
+                      to="/cms/faqs-policy"
+                      onClick={() => setMobileOpen(false)}
+                      className={({ isActive }) => (isActive ? "active" : "")}
+                    >
+                      FAQs and Terms
+                    </NavLink>
                   </div>
                 )}
               </div>

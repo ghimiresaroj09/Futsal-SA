@@ -511,6 +511,40 @@
   border-color: #f2d9dc;
 }
 
+.faq-editor-list {
+  display: grid;
+  gap: 16px;
+}
+
+.faq-editor-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 18px;
+  border: 1px solid #e2e1f7;
+  border-radius: 10px;
+  background: #fafbff;
+}
+
+.faq-editor-fields {
+  display: grid;
+  gap: 16px;
+  flex: 1;
+  min-width: 0;
+}
+
+.faq-editor-item .icon-button.danger {
+  flex: 0 0 auto;
+  margin-top: 2px;
+  color: #d86572;
+}
+
+@media (max-width: 560px) {
+  .faq-editor-item {
+    padding: 14px;
+  }
+}
+
 @media (max-width: 768px) {
   .cms-tabs {
     overflow-x: auto;

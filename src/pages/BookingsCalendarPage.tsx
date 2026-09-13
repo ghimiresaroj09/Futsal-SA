@@ -7,7 +7,7 @@ import {
   Phone,
   X,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useToast } from "../components/ui/Toast";
 import { authFetch } from "../lib/api";
 
@@ -80,8 +80,25 @@ export function BookingsCalendarPage() {
   const [count, setCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+  const dateStripRef = useRef<HTMLDivElement>(null);
+  const dateButtonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
 
   const visibleDates = getMonthDates(selectedMonth);
+
+  useEffect(() => {
+    const strip = dateStripRef.current;
+    const activeDateButton = dateButtonRefs.current[selectedDate];
+
+    if (!strip || !activeDateButton) return;
+
+    strip.scrollTo({
+      left:
+        activeDateButton.offsetLeft -
+        strip.clientWidth / 2 +
+        activeDateButton.clientWidth / 2,
+      behavior: "smooth",
+    });
+  }, [selectedDate, selectedMonth]);
 
   useEffect(() => {
     let active = true;
@@ -193,10 +210,13 @@ export function BookingsCalendarPage() {
       </div>
 
       <section className="availability-card">
-        <div className="date-strip">
+        <div className="date-strip" ref={dateStripRef}>
           {visibleDates.map((date) => (
             <button
               key={date}
+              ref={(element) => {
+                dateButtonRefs.current[date] = element;
+              }}
               className={selectedDate === date ? "active" : ""}
               onClick={() => setSelectedDate(date)}
             >

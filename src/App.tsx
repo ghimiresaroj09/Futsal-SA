@@ -32,6 +32,7 @@ import { CMSGalleryPage } from "./pages/CMSGalleryPage";
 import { CMSTestimonialsPage } from "./pages/CMSTestimonialsPage";
 import { CMSBookingsPage } from "./pages/CMSBookingsPage";
 import { CMSAboutUsPage } from "./pages/CMSAboutUsPage";
+import { CMSFAQsPolicyPage } from "./pages/CMSFAQsPolicyPage";
 import { ToastProvider } from "./components/ui/Toast";
 
 function ProtectedRoute() {
@@ -93,6 +94,8 @@ export default function App() {
                 path="/cms/testimonials"
                 element={<CMSTestimonialsPage />}
               />
+              <Route path="/cms/faqs-policy" element={<CMSFAQsPolicyPage />} />
+              <Route path="/cms/terms-policy" element={<CMSFAQsPolicyPage />} />
               <Route path="/change-password" element={<ChangePasswordPage />} />
               <Route path="/contact" element={<ContactUsPage />} />
               <Route path="/settings" element={<SettingsPage />} />
